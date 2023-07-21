@@ -1,17 +1,29 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {SafeAreaView, StatusBar} from 'react-native';
+import {LanguageSelector} from './screens';
+import {useTranslation} from 'react-i18next';
+import './lang/i18n';
 
-import LanguageSelector from './screens/LanguageSelector';
+const App = () => {
+  const {t, i18n} = useTranslation();
+  const [currentLanguage, setLanguage] = useState('en');
 
-function App(): JSX.Element {
-  const backgroundStyle = 'bg-neutral-300 dark:bg-slate-900';
+  const onChangeLanguage = value =>
+    i18n
+      .changeLanguage(value)
+      .then(() => setLanguage(value))
+      .catch(err => console.error(err));
 
   return (
-    <SafeAreaView className={backgroundStyle}>
+    <SafeAreaView className="bg-base">
       <StatusBar hidden />
-      <LanguageSelector />
+      <LanguageSelector
+        translate={t}
+        currentLanguage={currentLanguage}
+        onChangeLanguage={onChangeLanguage}
+      />
     </SafeAreaView>
   );
-}
+};
 
 export default App;
