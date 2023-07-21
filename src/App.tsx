@@ -47,7 +47,7 @@ function App(): JSX.Element {
 
   return (
     <SafeAreaView className={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <StatusBar hidden />
       <LanguageSelector />
     </SafeAreaView>
   );
