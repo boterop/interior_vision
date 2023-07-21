@@ -1,6 +1,7 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {FlatList, Image, Pressable, Text, View} from 'react-native';
 import {Button, SelectBox} from '../components';
+import {StorageService} from '../services';
 
 const getLanguageByCode = (values, code) =>
   values.filter(lang => lang.code === code)[0];
@@ -33,22 +34,31 @@ const Modal = ({values, onSetLanguage}) => (
 
 const LanguageSelector = ({translate, currentLanguage, onChangeLanguage}) => {
   const values = [
-    {icon: require('../assets/icons/spanish.png'), name: 'spanish', code: 'es'},
     {icon: require('../assets/icons/english.png'), name: 'english', code: 'en'},
+    {icon: require('../assets/icons/spanish.png'), name: 'spanish', code: 'es'},
     {icon: require('../assets/icons/french.png'), name: 'french', code: 'fr'},
   ];
 
-  const initialLanguage = getLanguageByCode(values, currentLanguage);
-
-  const [language, setLanguage] = useState(
-    initialLanguage ? initialLanguage.name : 'english',
-  );
+  const [language, setLanguage] = useState(values[0]);
   const [isVisible, setIsVisible] = useState(false);
+  const isInitialMount = useRef(true);
 
-  const onSelectLanguage = ({name, code}) => {
-    setLanguage(name);
-    onChangeLanguage(code);
+  const onSelectLanguage = lang => {
+    setLanguage(lang);
+    onChangeLanguage(lang.code);
   };
+
+  const onAcceptSelection = () => {
+    setIsVisible(false);
+    StorageService.save('language', currentLanguage);
+  };
+
+  if (isInitialMount.current) {
+    isInitialMount.current = false;
+
+    const initialLanguage = getLanguageByCode(values, currentLanguage);
+    setLanguage(initialLanguage);
+  }
 
   return (
     <Pressable
@@ -59,13 +69,12 @@ const LanguageSelector = ({translate, currentLanguage, onChangeLanguage}) => {
           onPress={() => {
             setIsVisible(!isVisible);
           }}
-          defaultValue={language}
-          values={values}
+          icon={language.icon}
         />
         {isVisible ? (
           <Modal values={values} onSetLanguage={onSelectLanguage} />
         ) : null}
-        <Button onPress={() => setIsVisible(false)} text={translate('acept')} />
+        <Button onPress={onAcceptSelection} text={translate('accept')} />
       </View>
     </Pressable>
   );
