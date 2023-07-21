@@ -3,14 +3,9 @@ import {Image, Pressable} from 'react-native';
 import {Colors} from '../statics';
 import Triangle from './Triangle';
 
-const SelectBox = ({onPress, className, defaultValue}) => {
-  const values = [
-    {icon: require(`../assets/icons/spanish.png`), name: 'spanish'},
-    {icon: require(`../assets/icons/english.png`), name: 'english'},
-  ];
-
+const SelectBox = ({onPress, className, defaultValue, values}) => {
   const getIconByName = name =>
-    values.filter(lang => lang.name == name)[0].icon;
+    values.filter(lang => lang.name === name)[0].icon;
 
   return (
     <Pressable
