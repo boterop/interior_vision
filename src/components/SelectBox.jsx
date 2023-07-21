@@ -1,6 +1,5 @@
 import React from 'react';
 import {Image, Pressable} from 'react-native';
-import {Colors} from '../statics';
 import Triangle from './Triangle';
 
 const SelectBox = ({onPress, className, defaultValue, values}) => {
@@ -9,13 +8,13 @@ const SelectBox = ({onPress, className, defaultValue, values}) => {
 
   return (
     <Pressable
-      className={`justify-end items-center h-32 w-32 pb-2 bg-[${Colors.light_base}] rounded-2xl border-2 border-black ${className}`}
+      className={`justify-end items-center h-32 w-32 pb-2 bg-light-base rounded-2xl border-2 border-black ${className}`}
       onPress={() => onPress()}>
       <Image
         className="h-[55%] w-[55%] mb-1"
         source={getIconByName(defaultValue)}
       />
-      <Triangle color={Colors.dark_base} />
+      <Triangle className="bg-light-base text-light-base border-t-light-base" />
     </Pressable>
   );
 };
