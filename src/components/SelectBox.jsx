@@ -47,3 +47,4 @@ const SelectBox = ({values, onSelectLanguage, className, icon}) => {
 };
 
 export default SelectBox;
+export {Modal, LangDescription};
