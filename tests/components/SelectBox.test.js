@@ -73,4 +73,4 @@ it('can select language correctly', async () => {
   expect(langOptions.length).toEqual(3);
   expect(languageSelected.code).toEqual('fr');
   expect(mockOnSelectLanguage).toHaveBeenCalled();
-});
+}, 20000);

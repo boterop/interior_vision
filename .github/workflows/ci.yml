@@ -11,6 +11,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18.15.0
+      - name: Install Yarn
+        run: npm i -g yarn
       - name: Install Dependencies
         run: yarn
       - name: Check Format
