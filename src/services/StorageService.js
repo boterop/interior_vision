@@ -22,6 +22,13 @@ const StorageService = {
       console.warn('Error loading data ' + key);
     }
   },
+  clean: async key => {
+    try {
+      await AsyncStorage.removeItem(defaultKey + key);
+    } catch (e) {
+      console.warn('Error cleaning data ' + key);
+    }
+  },
 };
 
 export default StorageService;

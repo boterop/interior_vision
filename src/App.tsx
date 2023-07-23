@@ -47,7 +47,7 @@ const App = () => {
           )}
         </Screen>
         <Screen name="chat">
-          {props => <Chat {...props} translate={t} />}
+          {props => <Chat {...props} translate={t} language={currentLanguage} />}
         </Screen>
       </Navigator>
     </NavigationContainer>

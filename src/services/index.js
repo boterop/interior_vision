@@ -1,3 +1,4 @@
 import StorageService from './StorageService';
+import API from './API';
 
-export {StorageService};
+export {API, StorageService};

@@ -18,32 +18,22 @@ const ChatItem = ({chatObject, onSelectMessage}) => (
   </Pressable>
 );
 
-const ChatView = ({classname}) => (
+const ChatView = ({messages, classname}) => (
   <View className={`w-full pb-12 ${classname}`}>
-    <Triangle
-      classname="absolute bottom-0 left-20 rotate-45 border-t-[100px] border-x-[40px]"
-      color="light-base"
-    />
+    <Triangle classname="absolute bottom-0 left-20 rotate-45 border-t-[100px] border-x-[40px] border-t-light-base" />
     <View className="bg-light-base rounded-3xl items-center w-full h-full mb-16 p-3 pt-5">
       <View className="h-full w-full">
         <FlatList
-          data={[
-            {role: 'system', content: 'You are a helpful assistant.'},
-            {role: 'user', content: 'Who won the world series in 2020?'},
-            {
-              role: 'assistant',
-              content: 'The Los Angeles Dodgers won the World Series in 2020.',
-            },
-            {role: 'user', content: 'Where was it played?'},
-          ]}
+          data={messages}
           renderItem={({item}) => {
-            if (item.role !== SYSTEM_ROLE)
+            if (item.role !== SYSTEM_ROLE) {
               return (
                 <ChatItem
                   chatObject={item}
                   onSelectMessage={() => console.log('TODO')}
                 />
               );
+            }
           }}
         />
       </View>

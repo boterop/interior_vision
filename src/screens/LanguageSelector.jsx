@@ -2,9 +2,7 @@ import React, {useRef, useState} from 'react';
 import {SafeAreaView, StatusBar, View} from 'react-native';
 import {Button, SelectBox} from '../components';
 import {StorageService} from '../services';
-
-const getLanguageByCode = (values, code) =>
-  values.filter(lang => lang.code === code)[0];
+import {Languages} from '../consts';
 
 const LanguageSelector = ({
   navigation,
@@ -12,11 +10,7 @@ const LanguageSelector = ({
   currentLanguage,
   onChangeLanguage,
 }) => {
-  const values = [
-    {icon: require('../assets/icons/english.png'), name: 'english', code: 'en'},
-    {icon: require('../assets/icons/spanish.png'), name: 'spanish', code: 'es'},
-    {icon: require('../assets/icons/french.png'), name: 'french', code: 'fr'},
-  ];
+  const values = Languages.get();
 
   const [language, setLanguage] = useState(values[0]);
   const isInitialMount = useRef(true);
@@ -34,7 +28,7 @@ const LanguageSelector = ({
   if (isInitialMount.current) {
     isInitialMount.current = false;
 
-    const initialLanguage = getLanguageByCode(values, currentLanguage);
+    const initialLanguage = Languages.getLanguageByCode(currentLanguage);
     setLanguage(initialLanguage);
   }
 
