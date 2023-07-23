@@ -1,3 +1,4 @@
 import LanguageSelector from './LanguageSelector';
+import Chat from './Chat';
 
-export {LanguageSelector};
+export {LanguageSelector, Chat};

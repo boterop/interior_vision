@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {LanguageSelector} from './screens';
+import {Chat, LanguageSelector} from './screens';
 import {useTranslation} from 'react-i18next';
 import {StorageService} from './services';
 import {NavigationContainer} from '@react-navigation/native';
@@ -45,6 +45,9 @@ const App = () => {
               onChangeLanguage={onChangeLanguage}
             />
           )}
+        </Screen>
+        <Screen name="chat">
+          {props => <Chat {...props} translate={t} />}
         </Screen>
       </Navigator>
     </NavigationContainer>
