@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, TextInput, Image, Pressable} from 'react-native';
+import {View, TextInput, Image, Pressable, Keyboard} from 'react-native';
 
 const ChatInput = ({classname, onSendMessage}) => {
   const [inputText, setInputText] = useState('');
@@ -19,6 +19,7 @@ const ChatInput = ({classname, onSendMessage}) => {
         className="w-10 h-12 items-center justify-center pr-2"
         onPress={() => {
           onSendMessage(inputText);
+          Keyboard.dismiss();
           setInputText('');
         }}>
         <Image
