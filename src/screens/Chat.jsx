@@ -38,7 +38,7 @@ const Chat = ({translate, language}) => {
 
   useEffect(() => {
     load();
-  }, [load]);
+  }, [isClosed]);
 
   useEffect(() => {
     if (isClosed) {
