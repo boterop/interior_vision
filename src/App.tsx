@@ -5,6 +5,7 @@ import {StorageService} from './services';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import './lang/i18n';
+import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 const App = () => {
   const {t, i18n} = useTranslation();
@@ -18,8 +19,17 @@ const App = () => {
       isInitialMount.current = false;
 
       StorageService.load('language').then(lang => onChangeLanguage(lang));
+
+      permissions();
     }
   });
+
+  const permissions = async () => {
+    const result = await check(PERMISSIONS.IOS.APP_TRACKING_TRANSPARENCY);
+    if (result === RESULTS.DENIED) {
+      await request(PERMISSIONS.IOS.APP_TRACKING_TRANSPARENCY);
+    }
+  };
 
   const onChangeLanguage = (value: string | undefined) =>
     i18n

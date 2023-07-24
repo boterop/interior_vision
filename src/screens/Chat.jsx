@@ -3,20 +3,53 @@ import {Image, View} from 'react-native';
 import {Button, ChatView, ChatInput} from '../components';
 import {API, StorageService} from '../services';
 import {Languages} from '../consts';
-import {APP_ID} from '@env';
+import {REWARD_ID} from '@env';
+import mobileAds, {
+  MaxAdContentRating,
+  TestIds,
+  useRewardedInterstitialAd,
+} from 'react-native-google-mobile-ads';
 
 const Chat = ({translate, language}) => {
   const [assistantID, setAssistantID] = useState(undefined);
   const [chat, setChat] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
   const isInitialMount = useRef(true);
+  const {isLoaded, isClosed, load, show} = useRewardedInterstitialAd(
+    __DEV__ ? TestIds.REWARDED_INTERSTITIAL : REWARD_ID,
+    adConfig,
+  );
 
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
+
       StorageService.load('assistant_id').then(setAssistant);
+
+      mobileAds().setRequestConfiguration({
+        maxAdContentRating: MaxAdContentRating.PG,
+        tagForChildDirectedTreatment: false,
+        tagForUnderAgeOfConsent: false,
+        testDeviceIdentifiers: ['EMULATOR'],
+      });
+      mobileAds().initialize();
     }
   });
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  useEffect(() => {
+    if (isClosed) {
+      // TODO show image
+    }
+  }, [isClosed]);
+
+  const adConfig = {
+    requestNonPersonalizedAdsOnly: true,
+    keywords: ['interior design', 'clothing', 'fashion'],
+  };
 
   const setAssistant = id => {
     if (id === undefined) {
@@ -52,7 +85,11 @@ const Chat = ({translate, language}) => {
     // API.view(assistantID).then(({response}) => {
     //   console.log(response);
     // });
-    console.log(APP_ID);
+    if (isLoaded) {
+      show();
+    } else {
+      console.warn('Not loaded');
+    }
   };
 
   return (
