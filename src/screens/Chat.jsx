@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Image, View} from 'react-native';
-import {Button, ChatView, TextInput} from '../components';
+import {Button, ChatView, ChatInput} from '../components';
 import {API, StorageService} from '../services';
 import {Languages} from '../consts';
 
@@ -15,6 +15,10 @@ const Chat = ({translate, language}) => {
       StorageService.load('assistant_id').then(setAssistant);
     }
   });
+
+  useEffect(() => {
+    console.log(chat);
+  }, [chat]);
 
   const setAssistant = assistantID => {
     if (assistantID === undefined) {
@@ -36,10 +40,20 @@ const Chat = ({translate, language}) => {
     }
   };
 
+  const onSendMessage = message => {
+    chat.push({role: 'user', content: message});
+    // TODO: Start writing animation
+    API.ask(message, assistantID).then(({response}) => {
+      chat.push({role: 'assistant', content: response});
+      setChat(chat);
+      // TODO: End writing animation
+    });
+  };
+
   return (
     <View className="items-center h-full w-full justify-between p-8">
       <ChatView messages={chat} classname="flex-1" />
-      <View className="flex align-baseline w-full h-44">
+      <View className="flex justify-end w-full">
         <View className="flex flex-row justify-between w-full items-center pr-8">
           <Image
             className="w-32 h-32"
@@ -51,7 +65,7 @@ const Chat = ({translate, language}) => {
             text={translate('view')}
           />
         </View>
-        <TextInput classname="" />
+        <ChatInput classname="" onSendMessage={onSendMessage} />
       </View>
     </View>
   );

@@ -2,7 +2,7 @@ import Button from './Button';
 import SelectBox from './SelectBox';
 import {Modal, LangDescription} from './SelectBox';
 import Triangle from './Triangle';
-import TextInput from './TextInput';
+import ChatInput from './ChatInput';
 import ChatView from './ChatView';
 import {ChatItem} from './ChatView';
 
@@ -14,5 +14,5 @@ export {
   Modal,
   LangDescription,
   Triangle,
-  TextInput,
+  ChatInput,
 };
