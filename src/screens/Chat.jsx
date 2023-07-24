@@ -3,6 +3,7 @@ import {Image, View} from 'react-native';
 import {Button, ChatView, ChatInput} from '../components';
 import {API, StorageService} from '../services';
 import {Languages} from '../consts';
+import {APP_ID} from '@env';
 
 const Chat = ({translate, language}) => {
   const [assistantID, setAssistantID] = useState(undefined);
@@ -48,10 +49,10 @@ const Chat = ({translate, language}) => {
   };
 
   const onView = () => {
-    API.view(assistantID).then(({response}) => {
-      console.log(response);
-    });
-    // TODO show publicity
+    // API.view(assistantID).then(({response}) => {
+    //   console.log(response);
+    // });
+    console.log(APP_ID);
   };
 
   return (
