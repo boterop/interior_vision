@@ -1,26 +1,10 @@
-import 'react-native';
 import React from 'react';
 import {LangDescription, Modal, SelectBox} from '../../src/components';
 import {act, create} from 'react-test-renderer';
 import {Image, Pressable, View} from 'react-native';
+import {Languages} from '../../src/consts';
 
-const values = [
-  {
-    icon: require('../../src/assets/icons/english.png'),
-    name: 'english',
-    code: 'en',
-  },
-  {
-    icon: require('../../src/assets/icons/spanish.png'),
-    name: 'spanish',
-    code: 'es',
-  },
-  {
-    icon: require('../../src/assets/icons/french.png'),
-    name: 'french',
-    code: 'fr',
-  },
-];
+const values = Languages.get();
 
 it('renders correctly', () => {
   const mockOnSelectLanguage = jest.fn();
