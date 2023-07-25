@@ -11,11 +11,10 @@ import mobileAds, {
   TestIds,
 } from 'react-native-google-mobile-ads';
 
-const Chat = ({translate}) => {
+const Chat = ({navigation, translate}) => {
   const [assistantID, setAssistantID] = useState(undefined);
   const [chat, setChat] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
   const [isAdLoaded, setIsAdLoaded] = useState(false);
 
   const isInitialMount = useRef(true);
@@ -52,16 +51,11 @@ const Chat = ({translate}) => {
   useEffect(() => {
     const unsubscribeLoaded = viewAd.addAdEventListener(
       RewardedAdEventType.LOADED,
-      () => {
-        console.log('Loaded');
-        setIsAdLoaded(true);
-      },
+      () => setIsAdLoaded(true),
     );
     const unsubscribeEarned = viewAd.addAdEventListener(
       RewardedAdEventType.EARNED_REWARD,
-      reward => {
-        console.log('Now you can view: ', reward);
-      },
+      reward => StorageService.save('view_count', reward.amount.toString()),
     );
 
     viewAd.load();
@@ -72,15 +66,11 @@ const Chat = ({translate}) => {
     };
   });
 
-  useEffect(() => {
-    if (viewAd.isClosed && imageUrl !== '') {
-    }
-  }, [viewAd.isClosed, imageUrl]);
-
   const setAssistant = (id, language) => {
     if (id === undefined) {
       API.createAssistant(Languages.getLanguageByCode(language).name)
         .then(({response}) => {
+          StorageService.save('view_count', '0');
           StorageService.save('assistant_id', response.toString());
           setAssistantID(response.toString());
         })
@@ -108,16 +98,26 @@ const Chat = ({translate}) => {
   };
 
   const onView = () => {
-    viewAd.show();
-    if (isAdLoaded) {
-      viewAd.show();
-      API.view(assistantID).then(({response}) => {
-        setImageUrl(response);
-      });
-    } else {
-      console.warn('Not loaded');
-    }
+    StorageService.load('view_count').then(count => {
+      if (parseInt(count, 10) <= 0) {
+        if (isAdLoaded) {
+          viewAd.show();
+          viewDesign();
+        } else {
+          console.warn('Not loaded');
+        }
+      } else {
+        StorageService.save('view_count', (parseInt(count, 10) - 1).toString());
+        viewDesign();
+      }
+    });
   };
+
+  const viewDesign = () =>
+    API.view(assistantID).then(({response}) => {
+      StorageService.save('image_url', response);
+      navigation.push('view_design');
+    });
 
   return (
     <SafeAreaView className="items-center h-full w-full bg-base justify-between p-8">
