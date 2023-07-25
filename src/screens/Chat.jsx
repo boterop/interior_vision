@@ -3,20 +3,22 @@ import {Image, View} from 'react-native';
 import {Button, ChatView, ChatInput} from '../components';
 import {API, StorageService} from '../services';
 import {Languages} from '../consts';
-import {REWARD_ID} from '@env';
+import {REWARDED_INTERSTITIAL_ID} from '@env';
 import mobileAds, {
   MaxAdContentRating,
   TestIds,
-  useRewardedInterstitialAd,
+  useRewardedAd,
 } from 'react-native-google-mobile-ads';
 
 const Chat = ({translate, language}) => {
   const [assistantID, setAssistantID] = useState(undefined);
   const [chat, setChat] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+
   const isInitialMount = useRef(true);
-  const {isLoaded, isClosed, load, show} = useRewardedInterstitialAd(
-    __DEV__ ? TestIds.REWARDED_INTERSTITIAL : REWARD_ID,
+  const {isLoaded, isClosed, load, show} = useRewardedAd(
+    __DEV__ ? TestIds.REWARDED : REWARDED_INTERSTITIAL_ID,
     adConfig,
   );
 
@@ -38,10 +40,7 @@ const Chat = ({translate, language}) => {
 
   useEffect(() => {
     load();
-  }, [isClosed]);
-
-  useEffect(() => {
-    if (isClosed) {
+    if (isClosed && imageUrl !== '') {
       // TODO show image
     }
   }, [isClosed]);
@@ -82,11 +81,11 @@ const Chat = ({translate, language}) => {
   };
 
   const onView = () => {
-    // API.view(assistantID).then(({response}) => {
-    //   console.log(response);
-    // });
     if (isLoaded) {
       show();
+      API.view(assistantID).then(({response}) => {
+        setImageUrl(response);
+      });
     } else {
       console.warn('Not loaded');
     }
