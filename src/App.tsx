@@ -10,6 +10,7 @@ import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 const App = () => {
   const {t, i18n} = useTranslation();
   const [currentLanguage, setLanguage] = useState('en');
+
   const isInitialMount = useRef(true);
 
   const {Screen, Navigator} = createNativeStackNavigator();
@@ -57,7 +58,9 @@ const App = () => {
           )}
         </Screen>
         <Screen name="chat">
-          {props => <Chat {...props} translate={t} language={currentLanguage} />}
+          {props => (
+            <Chat {...props} translate={t} language={currentLanguage} />
+          )}
         </Screen>
       </Navigator>
     </NavigationContainer>

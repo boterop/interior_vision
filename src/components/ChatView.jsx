@@ -10,7 +10,7 @@ const capitalize = text => text.charAt(0).toUpperCase() + text.slice(1);
 const ChatItem = ({chatObject, onSelectMessage}) => (
   <Pressable className="mb-5" onPress={onSelectMessage}>
     <Text
-      className={`text-dark-dark w-full text-xl font-black ${
+      className={`text-dark-dark w-full text-l font-black ${
         chatObject.role === USER_ROLE
           ? 'text-right text-dark-base pl-10'
           : 'pr-10'

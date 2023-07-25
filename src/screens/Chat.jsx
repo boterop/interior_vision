@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Image, View} from 'react-native';
+import {Image, SafeAreaView, StatusBar, View} from 'react-native';
 import {Button, ChatView, ChatInput} from '../components';
 import {API, StorageService} from '../services';
 import {Languages} from '../consts';
@@ -38,12 +38,12 @@ const Chat = ({translate, language}) => {
     }
   });
 
+  useEffect(() => load(), [isClosed]);
+
   useEffect(() => {
-    load();
     if (isClosed && imageUrl !== '') {
-      // TODO show image
     }
-  }, [isClosed]);
+  }, [isClosed, imageUrl]);
 
   const adConfig = {
     requestNonPersonalizedAdsOnly: true,
@@ -92,7 +92,8 @@ const Chat = ({translate, language}) => {
   };
 
   return (
-    <View className="items-center h-full w-full justify-between p-8">
+    <SafeAreaView className="items-center h-full w-full bg-base justify-between p-8">
+      <StatusBar hidden />
       <ChatView
         translate={translate}
         messages={chat}
@@ -114,7 +115,7 @@ const Chat = ({translate, language}) => {
         </View>
         <ChatInput classname="" onSendMessage={onSendMessage} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
