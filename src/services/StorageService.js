@@ -1,18 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const defaultKey = '@interior-vision:';
+import {STORAGE_KEY} from '@env';
 
 const StorageService = {
   save: async (key, value) => {
     try {
-      await AsyncStorage.setItem(defaultKey + key, value);
+      await AsyncStorage.setItem(STORAGE_KEY + key, value);
     } catch (e) {
       console.warn('Error saving data ' + value);
     }
   },
   load: async key => {
     try {
-      const value = await AsyncStorage.getItem(defaultKey + key);
+      const value = await AsyncStorage.getItem(STORAGE_KEY + key);
       if (value !== null) {
         return '' + value;
       } else {
@@ -24,7 +23,7 @@ const StorageService = {
   },
   clean: async key => {
     try {
-      await AsyncStorage.removeItem(defaultKey + key);
+      await AsyncStorage.removeItem(STORAGE_KEY + key);
     } catch (e) {
       console.warn('Error cleaning data ' + key);
     }

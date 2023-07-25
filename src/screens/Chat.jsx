@@ -3,11 +3,11 @@ import {Image, SafeAreaView, StatusBar, View} from 'react-native';
 import {Button, ChatView, ChatInput} from '../components';
 import {API, StorageService} from '../services';
 import {Languages} from '../consts';
-import {INTERSTITIAL_ID} from '@env';
+import {REWARDED_INTERSTITIAL_ID} from '@env';
 import mobileAds, {
-  AdEventType,
-  InterstitialAd,
   MaxAdContentRating,
+  RewardedAdEventType,
+  RewardedInterstitialAd,
   TestIds,
 } from 'react-native-google-mobile-ads';
 
@@ -20,14 +20,16 @@ const Chat = ({translate}) => {
 
   const isInitialMount = useRef(true);
 
-  const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : INTERSTITIAL_ID;
+  const adUnitId = __DEV__
+    ? TestIds.REWARDED_INTERSTITIAL
+    : REWARDED_INTERSTITIAL_ID;
 
   const adConfig = {
     requestNonPersonalizedAdsOnly: true,
     keywords: ['interior design', 'clothing', 'fashion'],
   };
 
-  const viewAd = InterstitialAd.createForAdRequest(adUnitId, adConfig);
+  const viewAd = RewardedInterstitialAd.createForAdRequest(adUnitId, adConfig);
 
   useEffect(() => {
     if (isInitialMount.current) {
@@ -44,18 +46,31 @@ const Chat = ({translate}) => {
         testDeviceIdentifiers: ['EMULATOR'],
       });
       mobileAds().initialize();
-
-      const unsubscribe = viewAd.addAdEventListener(AdEventType.LOADED, () =>
-        setIsAdLoaded(true),
-      );
-
-      viewAd.load();
-
-      return unsubscribe;
     }
   });
 
-  useEffect(() => viewAd.load(), [viewAd]);
+  useEffect(() => {
+    const unsubscribeLoaded = viewAd.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        console.log('Loaded');
+        setIsAdLoaded(true);
+      },
+    );
+    const unsubscribeEarned = viewAd.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      reward => {
+        console.log('Now you can view: ', reward);
+      },
+    );
+
+    viewAd.load();
+
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeEarned();
+    };
+  });
 
   useEffect(() => {
     if (viewAd.isClosed && imageUrl !== '') {
