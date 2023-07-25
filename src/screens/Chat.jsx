@@ -3,30 +3,39 @@ import {Image, SafeAreaView, StatusBar, View} from 'react-native';
 import {Button, ChatView, ChatInput} from '../components';
 import {API, StorageService} from '../services';
 import {Languages} from '../consts';
-import {REWARDED_INTERSTITIAL_ID} from '@env';
+import {INTERSTITIAL_ID} from '@env';
 import mobileAds, {
+  AdEventType,
+  InterstitialAd,
   MaxAdContentRating,
   TestIds,
-  useRewardedAd,
 } from 'react-native-google-mobile-ads';
 
-const Chat = ({translate, language}) => {
+const Chat = ({translate}) => {
   const [assistantID, setAssistantID] = useState(undefined);
   const [chat, setChat] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
+  const [isAdLoaded, setIsAdLoaded] = useState(false);
 
   const isInitialMount = useRef(true);
-  const {isLoaded, isClosed, load, show} = useRewardedAd(
-    __DEV__ ? TestIds.REWARDED : REWARDED_INTERSTITIAL_ID,
-    adConfig,
-  );
+
+  const adUnitId = __DEV__ ? TestIds.INTERSTITIAL : INTERSTITIAL_ID;
+
+  const adConfig = {
+    requestNonPersonalizedAdsOnly: true,
+    keywords: ['interior design', 'clothing', 'fashion'],
+  };
+
+  const viewAd = InterstitialAd.createForAdRequest(adUnitId, adConfig);
 
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
 
-      StorageService.load('assistant_id').then(setAssistant);
+      StorageService.load('language').then(lang =>
+        StorageService.load('assistant_id').then(id => setAssistant(id, lang)),
+      );
 
       mobileAds().setRequestConfiguration({
         maxAdContentRating: MaxAdContentRating.PG,
@@ -35,22 +44,25 @@ const Chat = ({translate, language}) => {
         testDeviceIdentifiers: ['EMULATOR'],
       });
       mobileAds().initialize();
+
+      const unsubscribe = viewAd.addAdEventListener(AdEventType.LOADED, () =>
+        setIsAdLoaded(true),
+      );
+
+      viewAd.load();
+
+      return unsubscribe;
     }
   });
 
-  useEffect(() => load(), [isClosed]);
+  useEffect(() => viewAd.load(), [viewAd]);
 
   useEffect(() => {
-    if (isClosed && imageUrl !== '') {
+    if (viewAd.isClosed && imageUrl !== '') {
     }
-  }, [isClosed, imageUrl]);
+  }, [viewAd.isClosed, imageUrl]);
 
-  const adConfig = {
-    requestNonPersonalizedAdsOnly: true,
-    keywords: ['interior design', 'clothing', 'fashion'],
-  };
-
-  const setAssistant = id => {
+  const setAssistant = (id, language) => {
     if (id === undefined) {
       API.createAssistant(Languages.getLanguageByCode(language).name)
         .then(({response}) => {
@@ -81,8 +93,9 @@ const Chat = ({translate, language}) => {
   };
 
   const onView = () => {
-    if (isLoaded) {
-      show();
+    viewAd.show();
+    if (isAdLoaded) {
+      viewAd.show();
       API.view(assistantID).then(({response}) => {
         setImageUrl(response);
       });

@@ -35,9 +35,7 @@ const App = () => {
   const onChangeLanguage = (value: string | undefined) =>
     i18n
       .changeLanguage(value)
-      .then(() => {
-        setLanguage(value ? value : 'en');
-      })
+      .then(() => setLanguage(value ? value : 'en'))
       .catch(err => console.error(err));
 
   return (
@@ -58,9 +56,7 @@ const App = () => {
           )}
         </Screen>
         <Screen name="chat">
-          {props => (
-            <Chat {...props} translate={t} language={currentLanguage} />
-          )}
+          {props => <Chat {...props} translate={t} />}
         </Screen>
       </Navigator>
     </NavigationContainer>

@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_URL = 'https://api.boterop.io/interior-vision';
+import {API_URL} from '@env';
 
 const post = (uri, body = {}) =>
   axios
