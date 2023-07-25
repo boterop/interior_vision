@@ -1,12 +1,17 @@
 import React, {useRef, useState} from 'react';
-import {View} from 'react-native';
+import {SafeAreaView, StatusBar, View} from 'react-native';
 import {Button, SelectBox} from '../components';
 import {StorageService} from '../services';
 
 const getLanguageByCode = (values, code) =>
   values.filter(lang => lang.code === code)[0];
 
-const LanguageSelector = ({translate, currentLanguage, onChangeLanguage}) => {
+const LanguageSelector = ({
+  navigation,
+  translate,
+  currentLanguage,
+  onChangeLanguage,
+}) => {
   const values = [
     {icon: require('../assets/icons/english.png'), name: 'english', code: 'en'},
     {icon: require('../assets/icons/spanish.png'), name: 'spanish', code: 'es'},
@@ -23,6 +28,7 @@ const LanguageSelector = ({translate, currentLanguage, onChangeLanguage}) => {
 
   const onAcceptSelection = () => {
     StorageService.save('language', currentLanguage);
+    navigation.navigate('chat');
   };
 
   if (isInitialMount.current) {
@@ -33,7 +39,8 @@ const LanguageSelector = ({translate, currentLanguage, onChangeLanguage}) => {
   }
 
   return (
-    <View className="relative items-center h-full w-full">
+    <SafeAreaView className="relative items-center bg-base h-full w-full">
+      <StatusBar hidden />
       <View className="bottom-0 absolute flexflex-wrap items-center justify-between h-[65%] w-full mb-10">
         <SelectBox
           values={values}
@@ -42,7 +49,7 @@ const LanguageSelector = ({translate, currentLanguage, onChangeLanguage}) => {
         />
         <Button onPress={onAcceptSelection} text={translate('accept')} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
