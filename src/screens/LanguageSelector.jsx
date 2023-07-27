@@ -1,10 +1,8 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {SafeAreaView, StatusBar, View} from 'react-native';
 import {Button, SelectBox} from '../components';
 import {StorageService} from '../services';
-
-const getLanguageByCode = (values, code) =>
-  values.filter(lang => lang.code === code)[0];
+import {Languages} from '../consts';
 
 const LanguageSelector = ({
   navigation,
@@ -12,14 +10,27 @@ const LanguageSelector = ({
   currentLanguage,
   onChangeLanguage,
 }) => {
-  const values = [
-    {icon: require('../assets/icons/english.png'), name: 'english', code: 'en'},
-    {icon: require('../assets/icons/spanish.png'), name: 'spanish', code: 'es'},
-    {icon: require('../assets/icons/french.png'), name: 'french', code: 'fr'},
-  ];
+  const values = Languages.get();
 
   const [language, setLanguage] = useState(values[0]);
   const isInitialMount = useRef(true);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+
+      StorageService.load('first_time').then(ft => {
+        if (ft === 'false' && ft !== undefined) {
+          navigation.navigate('chat');
+        }
+      });
+    }
+  });
+
+  useEffect(() => {
+    const initialLanguage = Languages.getLanguageByCode(currentLanguage);
+    setLanguage(initialLanguage);
+  }, [currentLanguage]);
 
   const onSelectLanguage = lang => {
     setLanguage(lang);
@@ -27,16 +38,10 @@ const LanguageSelector = ({
   };
 
   const onAcceptSelection = () => {
+    StorageService.save('first_time', 'false');
     StorageService.save('language', currentLanguage);
     navigation.navigate('chat');
   };
-
-  if (isInitialMount.current) {
-    isInitialMount.current = false;
-
-    const initialLanguage = getLanguageByCode(values, currentLanguage);
-    setLanguage(initialLanguage);
-  }
 
   return (
     <SafeAreaView className="relative items-center bg-base h-full w-full">

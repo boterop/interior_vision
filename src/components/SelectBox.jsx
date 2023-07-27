@@ -37,7 +37,7 @@ const SelectBox = ({values, onSelectLanguage, className, icon}) => {
         className={`justify-end items-center h-32 w-32 pb-2 bg-light-base rounded-2xl border-2 border-black ${className}`}
         onPress={() => setIsVisible(!isVisible)}>
         <Image className="h-[55%] w-[55%] mb-1" source={icon} />
-        <Triangle className="bg-light-base text-light-base border-t-light-base" />
+        <Triangle />
       </Pressable>
       {isVisible ? (
         <Modal values={values} onSelectLanguage={onSelectLanguage} />
