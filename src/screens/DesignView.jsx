@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {StorageService} from '../services';
 import {Image, Pressable, StatusBar, View} from 'react-native';
+import {Button} from '../components';
 
 const {SafeAreaView} = require('react-native');
 
@@ -26,21 +27,43 @@ const DesignView = ({translate, navigation}) => {
     }
   });
 
-  const buttonsClassName = 'w-10 h-12 items-center justify-center pr-2';
+  const buttonsClassName =
+    'w-12 h-12 items-center justify-center mr-2 bg-dark-base rounded-full border-2 border-black';
+  const iconsClassName = 'aspect-square h-[50%]';
 
   return (
-    <SafeAreaView className="items-center h-full w-full bg-base justify-between p-8">
+    <SafeAreaView className="items-center h-full w-full bg-base p-8">
       <StatusBar hidden />
-      <View className="aspect-square w-full">
+      <Pressable className="aspect-square w-full" onPress={() => {}}>
         {imageUrl !== '' ? (
           <Image className="w-full h-full" source={{uri: imageUrl}} />
         ) : null}
-      </View>
-      <View className="flex-row">
+      </Pressable>
+      <View className="flex-row items-center justify-between mt-5">
+        <View className="flex-1">
+          <Button
+            classname="w-32 h-10"
+            textClassName="text-xl"
+            text={translate('remake')}
+            onPress={() => {}}
+          />
+        </View>
         <Pressable className={buttonsClassName} onPress={() => {}}>
           <Image
-            className="w-[70%] h-[50%]"
-            source={require('../assets/icons/send.png')}
+            className={iconsClassName}
+            source={require('../assets/icons/copy.png')}
+          />
+        </Pressable>
+        <Pressable className={buttonsClassName} onPress={() => {}}>
+          <Image
+            className={iconsClassName}
+            source={require('../assets/icons/download.png')}
+          />
+        </Pressable>
+        <Pressable className={buttonsClassName} onPress={() => {}}>
+          <Image
+            className={iconsClassName}
+            source={require('../assets/icons/share.png')}
           />
         </Pressable>
       </View>
