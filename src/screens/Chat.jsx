@@ -80,7 +80,13 @@ const Chat = ({navigation, translate}) => {
     } else {
       setAssistantID(id);
       API.getMemory(id)
-        .then(({response}) => setChat(response))
+        .then(({status, response}) => {
+          if (status === 200) {
+            setChat(response);
+          } else if (status === 409) {
+            setAssistant(undefined, language);
+          }
+        })
         .catch(error => {
           console.error('getMemory: ', error);
         });
