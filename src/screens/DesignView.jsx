@@ -71,18 +71,18 @@ const DesignView = ({translate, navigation}) => {
             onPress={() => {}}
           />
         </View>
-        <Pressable className={buttonsClassName} onPress={() => {}}>
+        {/* <Pressable className={buttonsClassName} onPress={() => {}}>
           <Image
             className={iconsClassName}
             source={require('../assets/icons/copy.png')}
           />
-        </Pressable>
-        <Pressable className={buttonsClassName} onPress={() => {}}>
+        </Pressable> */}
+        {/* <Pressable className={buttonsClassName} onPress={() => {}}>
           <Image
             className={iconsClassName}
             source={require('../assets/icons/download.png')}
           />
-        </Pressable>
+        </Pressable> */}
         <Pressable className={buttonsClassName} onPress={() => share()}>
           <Image
             className={iconsClassName}
