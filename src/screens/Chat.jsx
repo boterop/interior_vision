@@ -1,10 +1,12 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Image, SafeAreaView, StatusBar, View} from 'react-native';
-import {Button, ChatView, ChatInput} from '../components';
+import {Button, ChatView, ChatInput, LoadingModal} from '../components';
 import {API, StorageService} from '../services';
 import {Languages} from '../consts';
-import {REWARDED_INTERSTITIAL_ID} from '@env';
+import {REWARDED_INTERSTITIAL_ID, INTERSTITIAL_ID} from '@env';
 import mobileAds, {
+  AdEventType,
+  InterstitialAd,
   MaxAdContentRating,
   RewardedAdEventType,
   RewardedInterstitialAd,
@@ -16,19 +18,26 @@ const Chat = ({navigation, translate}) => {
   const [chat, setChat] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
   const [isAdLoaded, setIsAdLoaded] = useState(false);
+  const [isChatAdLoaded, setIsChatAdLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isInitialMount = useRef(true);
 
-  const adUnitId = __DEV__
-    ? TestIds.REWARDED_INTERSTITIAL
-    : REWARDED_INTERSTITIAL_ID;
+  const chatAdFreq = 5;
 
   const adConfig = {
     requestNonPersonalizedAdsOnly: true,
     keywords: ['interior design', 'clothing', 'fashion'],
   };
 
-  const viewAd = RewardedInterstitialAd.createForAdRequest(adUnitId, adConfig);
+  const viewAd = RewardedInterstitialAd.createForAdRequest(
+    __DEV__ ? TestIds.REWARDED_INTERSTITIAL : REWARDED_INTERSTITIAL_ID,
+    adConfig,
+  );
+  const chatAd = InterstitialAd.createForAdRequest(
+    __DEV__ ? TestIds.INTERSTITIAL : INTERSTITIAL_ID,
+    adConfig,
+  );
 
   useEffect(() => {
     if (isInitialMount.current) {
@@ -66,6 +75,17 @@ const Chat = ({navigation, translate}) => {
     };
   });
 
+  useEffect(() => {
+    const unsubscribeLoaded = chatAd.addAdEventListener(
+      AdEventType.LOADED,
+      () => setIsChatAdLoaded(true),
+    );
+
+    chatAd.load();
+
+    return unsubscribeLoaded;
+  });
+
   const setAssistant = (id, language) => {
     if (id === undefined) {
       API.createAssistant(Languages.getLanguageByCode(language).name)
@@ -94,6 +114,11 @@ const Chat = ({navigation, translate}) => {
   };
 
   const onSendMessage = message => {
+    if (isChatAdLoaded) {
+      if (chat.length % chatAdFreq === 0) {
+        chatAd.show();
+      }
+    }
     chat.push({role: 'user', content: message});
     setIsThinking(true);
     API.ask(message, assistantID).then(({response}) => {
@@ -105,12 +130,14 @@ const Chat = ({navigation, translate}) => {
 
   const onView = () => {
     StorageService.load('view_count').then(count => {
+      setIsLoading(true);
       if (parseInt(count, 10) <= 0) {
         if (isAdLoaded) {
           viewAd.show();
           viewDesign();
         } else {
           console.warn('Not loaded');
+          setIsLoading(false);
         }
       } else {
         viewDesign();
@@ -127,32 +154,36 @@ const Chat = ({navigation, translate}) => {
       .catch(e => {
         console.warn(e);
         viewDesign();
-      });
+      })
+      .finally(() => setIsLoading(false));
 
   return (
-    <SafeAreaView className="items-center h-full w-full bg-base justify-between p-8">
-      <StatusBar hidden />
-      <ChatView
-        translate={translate}
-        messages={chat}
-        isThinking={isThinking}
-        classname="flex-1"
-      />
-      <View className="flex justify-end w-full">
-        <View className="flex flex-row justify-between w-full items-center pr-8">
-          <Image
-            className="w-32 h-32"
-            source={require('../assets/avatars/avatar1.png')}
-          />
-          <Button
-            classname="rounded-full h-10 w-28"
-            textClassName="text-xl"
-            onPress={onView}
-            text={translate('view')}
-          />
+    <SafeAreaView>
+      <View className="items-center h-full w-full bg-base justify-between p-8">
+        <StatusBar hidden />
+        <ChatView
+          translate={translate}
+          messages={chat}
+          isThinking={isThinking}
+          classname="flex-1"
+        />
+        <View className="flex justify-end w-full">
+          <View className="flex flex-row justify-between w-full items-center pr-8">
+            <Image
+              className="w-32 h-32"
+              source={require('../assets/avatars/avatar1.png')}
+            />
+            <Button
+              classname="rounded-full h-10 w-28"
+              textClassName="text-xl"
+              onPress={onView}
+              text={translate('view')}
+            />
+          </View>
+          <ChatInput classname="" onSendMessage={onSendMessage} />
         </View>
-        <ChatInput classname="" onSendMessage={onSendMessage} />
       </View>
+      <LoadingModal isVisible={isLoading} />
     </SafeAreaView>
   );
 };
