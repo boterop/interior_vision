@@ -20,6 +20,7 @@ const Chat = ({navigation, translate}) => {
   const [isAdLoaded, setIsAdLoaded] = useState(false);
   const [isChatAdLoaded, setIsChatAdLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [count, setCount] = useState('0');
 
   const isInitialMount = useRef(true);
 
@@ -43,7 +44,10 @@ const Chat = ({navigation, translate}) => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
 
-      // StorageService.save('view_count', '10');
+      // StorageService.save('view_count', '0');
+      StorageService.load('view_count').then(view_count =>
+        setCount(view_count),
+      );
       StorageService.load('language').then(lang =>
         StorageService.load('assistant_id').then(id => setAssistant(id, lang)),
       );
@@ -63,10 +67,10 @@ const Chat = ({navigation, translate}) => {
       RewardedAdEventType.LOADED,
       () => setIsAdLoaded(true),
     );
-    const unsubscribeEarned = viewAd.addAdEventListener(
-      RewardedAdEventType.EARNED_REWARD,
-      reward => StorageService.save('view_count', reward.amount.toString()),
-    );
+    viewAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, reward => {
+      setCount(reward.amount.toString());
+      StorageService.save('view_count', reward.amount.toString());
+    });
     const unsubscribeChatLoaded = chatAd.addAdEventListener(
       AdEventType.LOADED,
       () => setIsChatAdLoaded(true),
@@ -78,7 +82,6 @@ const Chat = ({navigation, translate}) => {
 
     return () => {
       unsubscribeLoaded();
-      unsubscribeEarned();
       unsubscribeChatLoaded();
     };
   });
@@ -89,6 +92,7 @@ const Chat = ({navigation, translate}) => {
         .then(({response}) => {
           StorageService.save('view_count', '0');
           StorageService.save('assistant_id', response.toString());
+          setCount('0');
           setAssistantID(response.toString());
         })
         .catch(error => {
@@ -126,9 +130,9 @@ const Chat = ({navigation, translate}) => {
   };
 
   const onView = () =>
-    StorageService.load('view_count').then(count => {
+    StorageService.load('view_count').then(view_count => {
       setIsLoading(true);
-      if (parseInt(count, 10) <= 0) {
+      if (parseInt(view_count, 10) <= 0) {
         if (isAdLoaded) {
           viewAd.show();
           viewDesign();
@@ -145,13 +149,13 @@ const Chat = ({navigation, translate}) => {
     API.view(assistantID)
       .then(({response}) => {
         StorageService.save('image_url', response);
+        setIsLoading(false);
         navigation.push('design_view');
       })
       .catch(e => {
         console.warn(e);
         viewDesign();
-      })
-      .finally(() => setIsLoading(false));
+      });
 
   return (
     <SafeAreaView>
@@ -169,12 +173,14 @@ const Chat = ({navigation, translate}) => {
               className="w-32 h-32"
               source={require('../assets/avatars/avatar1.png')}
             />
-            <Button
-              classname="rounded-full h-10 w-28"
-              textClassName="text-xl"
-              onPress={onView}
-              text={translate('view')}
-            />
+            {isAdLoaded || parseInt(count, 10) > 0 ? (
+              <Button
+                classname="rounded-full h-10 w-28"
+                textClassName="text-xl"
+                onPress={onView}
+                text={translate('view')}
+              />
+            ) : null}
           </View>
           <ChatInput classname="" onSendMessage={onSendMessage} />
         </View>

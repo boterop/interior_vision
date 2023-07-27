@@ -2,8 +2,12 @@ import React from 'react';
 import {Image, View} from 'react-native';
 
 const LoadingModal = ({isVisible}) => {
+  const timeout = 25000;
+
   if (!isVisible) {
     return null;
+  } else {
+    setTimeout(() => (isVisible = false), timeout);
   }
   return (
     <View className="absolute w-full h-full items-center justify-center">
