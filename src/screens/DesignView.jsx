@@ -1,18 +1,20 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {StorageService} from '../services';
-import {Image, Pressable, StatusBar, View} from 'react-native';
+import {API, StorageService} from '../services';
+import {Image, Pressable, Share, StatusBar, View} from 'react-native';
 import {Button} from '../components';
 
 const {SafeAreaView} = require('react-native');
 
 const DesignView = ({translate, navigation}) => {
   const [imageUrl, setImageUrl] = useState('');
+  const [assistantID, setAssistantID] = useState('');
   const isInitialMount = useRef(true);
 
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
 
+      StorageService.load('assistant_id').then(setAssistantID);
       StorageService.load('view_count').then(count => {
         if (parseInt(count, 10) <= 0) {
           navigation.pop(1);
@@ -25,7 +27,28 @@ const DesignView = ({translate, navigation}) => {
         }
       });
     }
-  });
+  }, [navigation]);
+
+  const remake = () => {
+    StorageService.load('view_count').then(count => {
+      if (parseInt(count, 10) <= 0) {
+        navigation.pop(1);
+      } else {
+        API.view(assistantID).then(({response}) => {
+          StorageService.save(
+            'view_count',
+            (parseInt(count, 10) - 1).toString(),
+          );
+          setImageUrl(response);
+        });
+      }
+    });
+  };
+
+  const share = () =>
+    Share.share({
+      message: `${translate('share-message')} ${imageUrl}`,
+    });
 
   const buttonsClassName =
     'w-12 h-12 items-center justify-center mr-2 bg-dark-base rounded-full border-2 border-black';
@@ -34,7 +57,7 @@ const DesignView = ({translate, navigation}) => {
   return (
     <SafeAreaView className="items-center h-full w-full bg-base p-8">
       <StatusBar hidden />
-      <Pressable className="aspect-square w-full" onPress={() => {}}>
+      <Pressable className="aspect-square w-full" onPress={() => remake()}>
         {imageUrl !== '' ? (
           <Image className="w-full h-full" source={{uri: imageUrl}} />
         ) : null}
@@ -60,7 +83,7 @@ const DesignView = ({translate, navigation}) => {
             source={require('../assets/icons/download.png')}
           />
         </Pressable>
-        <Pressable className={buttonsClassName} onPress={() => {}}>
+        <Pressable className={buttonsClassName} onPress={() => share()}>
           <Image
             className={iconsClassName}
             source={require('../assets/icons/share.png')}

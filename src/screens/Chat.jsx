@@ -113,10 +113,15 @@ const Chat = ({navigation, translate}) => {
   };
 
   const viewDesign = () =>
-    API.view(assistantID).then(({response}) => {
-      StorageService.save('image_url', response);
-      navigation.push('design_view');
-    });
+    API.view(assistantID)
+      .then(({response}) => {
+        StorageService.save('image_url', response);
+        navigation.push('design_view');
+      })
+      .catch(e => {
+        console.warn(e);
+        viewDesign();
+      });
 
   return (
     <SafeAreaView className="items-center h-full w-full bg-base justify-between p-8">
