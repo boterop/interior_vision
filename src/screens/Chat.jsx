@@ -107,17 +107,16 @@ const Chat = ({navigation, translate}) => {
           console.warn('Not loaded');
         }
       } else {
-        StorageService.save('view_count', (parseInt(count, 10) - 1).toString());
         viewDesign();
       }
     });
   };
 
-  const viewDesign = () =>
-    API.view(assistantID).then(({response}) => {
-      StorageService.save('image_url', response);
-      navigation.push('view_design');
-    });
+  const viewDesign = () => navigation.push('design_view');
+  API.view(assistantID).then(({response}) => {
+    StorageService.save('image_url', response);
+    navigation.push('design_view');
+  });
 
   return (
     <SafeAreaView className="items-center h-full w-full bg-base justify-between p-8">
