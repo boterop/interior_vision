@@ -1,13 +1,14 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {API, StorageService} from '../services';
 import {Image, Pressable, Share, StatusBar, View} from 'react-native';
-import {Button} from '../components';
+import {Button, LoadingModal} from '../components';
 
 const {SafeAreaView} = require('react-native');
 
 const DesignView = ({translate, navigation}) => {
   const [imageUrl, setImageUrl] = useState('');
   const [assistantID, setAssistantID] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialMount = useRef(true);
 
   useEffect(() => {
@@ -29,36 +30,49 @@ const DesignView = ({translate, navigation}) => {
     }
   }, [navigation]);
 
-  const remake = () => {
+  const remake = () =>
+    API.view(assistantID)
+      .then(({response}) => {
+        StorageService.load('view_count').then(count =>
+          StorageService.save(
+            'view_count',
+            (parseInt(count, 10) - 1).toString(),
+          ),
+        );
+        setIsLoading(false);
+        setImageUrl(response);
+      })
+      .catch(e => {
+        console.warn(e);
+        remake();
+      });
+
+  const onRemake = () => {
     StorageService.load('view_count').then(count => {
       if (parseInt(count, 10) <= 0) {
         navigation.pop(1);
       } else {
-        API.view(assistantID).then(({response}) => {
-          StorageService.save(
-            'view_count',
-            (parseInt(count, 10) - 1).toString(),
-          );
-          setImageUrl(response);
-        });
+        setIsLoading(true);
+        remake();
       }
     });
   };
 
-  const share = () =>
+  const onShare = () =>
     Share.share({
       message: `${translate('share-message')} ${imageUrl}`,
     });
 
   const buttonsClassName =
-    'w-12 h-12 items-center justify-center mr-2 bg-dark-base rounded-full border-2 border-black';
+    'w-12 h-12 items-center justify-center mr-2 bg-light-base rounded-full border-2 border-black';
   const iconsClassName = 'aspect-square h-[50%]';
 
   return (
     <SafeAreaView className="items-center h-full w-full bg-base p-8">
       <StatusBar hidden />
-      <Pressable className="aspect-square w-full" onPress={() => remake()}>
-        {imageUrl !== '' ? (
+      <Pressable className="aspect-square w-full" onPress={() => {}}>
+        <LoadingModal isVisible={isLoading} />
+        {imageUrl !== '' && !isLoading ? (
           <Image className="w-full h-full" source={{uri: imageUrl}} />
         ) : null}
       </Pressable>
@@ -68,7 +82,7 @@ const DesignView = ({translate, navigation}) => {
             classname="w-32 h-10"
             textClassName="text-xl"
             text={translate('remake')}
-            onPress={() => {}}
+            onPress={() => onRemake()}
           />
         </View>
         {/* <Pressable className={buttonsClassName} onPress={() => {}}>
@@ -83,7 +97,7 @@ const DesignView = ({translate, navigation}) => {
             source={require('../assets/icons/download.png')}
           />
         </Pressable> */}
-        <Pressable className={buttonsClassName} onPress={() => share()}>
+        <Pressable className={buttonsClassName} onPress={() => onShare()}>
           <Image
             className={iconsClassName}
             source={require('../assets/icons/share.png')}

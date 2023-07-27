@@ -43,6 +43,7 @@ const Chat = ({navigation, translate}) => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
 
+      // StorageService.save('view_count', '10');
       StorageService.load('language').then(lang =>
         StorageService.load('assistant_id').then(id => setAssistant(id, lang)),
       );
@@ -66,24 +67,20 @@ const Chat = ({navigation, translate}) => {
       RewardedAdEventType.EARNED_REWARD,
       reward => StorageService.save('view_count', reward.amount.toString()),
     );
-
-    viewAd.load();
-
-    return () => {
-      unsubscribeLoaded();
-      unsubscribeEarned();
-    };
-  });
-
-  useEffect(() => {
-    const unsubscribeLoaded = chatAd.addAdEventListener(
+    const unsubscribeChatLoaded = chatAd.addAdEventListener(
       AdEventType.LOADED,
       () => setIsChatAdLoaded(true),
     );
 
     chatAd.load();
 
-    return unsubscribeLoaded;
+    viewAd.load();
+
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeEarned();
+      unsubscribeChatLoaded();
+    };
   });
 
   const setAssistant = (id, language) => {
@@ -128,7 +125,7 @@ const Chat = ({navigation, translate}) => {
     });
   };
 
-  const onView = () => {
+  const onView = () =>
     StorageService.load('view_count').then(count => {
       setIsLoading(true);
       if (parseInt(count, 10) <= 0) {
@@ -143,7 +140,6 @@ const Chat = ({navigation, translate}) => {
         viewDesign();
       }
     });
-  };
 
   const viewDesign = () =>
     API.view(assistantID)
