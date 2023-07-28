@@ -25,18 +25,13 @@ const Chat = ({navigation, translate}) => {
 
   const isInitialMount = useRef(true);
 
-  const adConfig = {
-    requestNonPersonalizedAdsOnly: true,
-    keywords: ['interior design', 'clothing', 'fashion'],
-  };
-
   const viewAd = RewardedInterstitialAd.createForAdRequest(
     __DEV__ ? TestIds.REWARDED_INTERSTITIAL : REWARDED_INTERSTITIAL_ID,
-    adConfig,
+    Consts.AD_PREFERENCES,
   );
   const chatAd = InterstitialAd.createForAdRequest(
     __DEV__ ? TestIds.INTERSTITIAL : INTERSTITIAL_ID,
-    adConfig,
+    Consts.AD_PREFERENCES,
   );
 
   useEffect(() => {
