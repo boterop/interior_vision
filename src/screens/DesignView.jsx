@@ -17,15 +17,8 @@ const DesignView = ({translate, navigation}) => {
 
       StorageService.load('assistant_id').then(setAssistantID);
       StorageService.load('view_count').then(count => {
-        if (parseInt(count, 10) <= 0) {
-          navigation.pop(1);
-        } else {
-          StorageService.load('image_url').then(setImageUrl);
-          StorageService.save(
-            'view_count',
-            (parseInt(count, 10) - 1).toString(),
-          );
-        }
+        StorageService.load('image_url').then(setImageUrl);
+        StorageService.save('view_count', (parseInt(count, 10) - 1).toString());
       });
     }
   }, [navigation]);

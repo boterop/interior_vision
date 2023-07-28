@@ -150,7 +150,11 @@ const Chat = ({navigation, translate}) => {
       ),
     );
 
-  const onView = () =>
+  const onView = () => {
+    if (chat.length < 6) {
+      chatAd.show();
+      return;
+    }
     StorageService.load('view_count').then(view_count => {
       setIsLoading(true);
       if (parseInt(view_count, 10) <= 0) {
@@ -165,6 +169,7 @@ const Chat = ({navigation, translate}) => {
         viewDesign();
       }
     });
+  };
 
   const viewDesign = () =>
     API.view(assistantID)
