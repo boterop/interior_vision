@@ -94,6 +94,7 @@ const Chat = ({navigation, translate}) => {
           StorageService.save('assistant_id', response.toString());
           setCount('0');
           setAssistantID(response.toString());
+          setChat({role: 'assistant', content: translate('hi')});
         })
         .catch(error => {
           console.error('createAssistant: ', error);
@@ -103,6 +104,9 @@ const Chat = ({navigation, translate}) => {
       API.getMemory(id)
         .then(({status, response}) => {
           if (status === 200) {
+            if (response.length <= 3) {
+              response.push({role: 'assistant', content: translate('hi')});
+            }
             setChat(response);
           } else if (status === 409) {
             setAssistant(undefined, language);
@@ -122,12 +126,29 @@ const Chat = ({navigation, translate}) => {
     }
     chat.push({role: 'user', content: message});
     setIsThinking(true);
-    API.ask(message, assistantID).then(({response}) => {
-      chat.push({role: 'assistant', content: response});
+    API.ask(message, assistantID).then(({response, status}) => {
+      if (status === 409) {
+        chat.push({
+          role: 'assistant',
+          content: translate('max_length_reached'),
+        });
+      } else {
+        chat.push({role: 'assistant', content: response});
+      }
       setChat(chat);
       setIsThinking(false);
     });
   };
+
+  const onReset = () =>
+    StorageService.load('language').then(lang =>
+      API.cleanMemory(assistantID, lang).then(() =>
+        API.getMemory(assistantID).then(({response}) => {
+          response.push({role: 'assistant', content: translate('hi')});
+          setChat(response);
+        }),
+      ),
+    );
 
   const onView = () =>
     StorageService.load('view_count').then(view_count => {
@@ -147,10 +168,18 @@ const Chat = ({navigation, translate}) => {
 
   const viewDesign = () =>
     API.view(assistantID)
-      .then(({response}) => {
-        StorageService.save('image_url', response);
+      .then(({response, status}) => {
+        if (status === 200) {
+          StorageService.save('image_url', response);
+          navigation.push('design_view');
+        } else if (status === 409) {
+          chat.push({
+            role: 'assistant',
+            content: translate('max_length_reached'),
+          });
+        }
+
         setIsLoading(false);
-        navigation.push('design_view');
       })
       .catch(e => {
         console.warn(e);
@@ -173,14 +202,24 @@ const Chat = ({navigation, translate}) => {
               className="w-32 h-32"
               source={require('../assets/avatars/avatar1.png')}
             />
-            {isAdLoaded || parseInt(count, 10) > 0 ? (
-              <Button
-                classname="rounded-full h-10 w-28"
-                textClassName="text-xl"
-                onPress={onView}
-                text={translate('view')}
-              />
-            ) : null}
+            <View>
+              {chat.length > 2 ? (
+                <Button
+                  classname="rounded-full h-8 w-28 mb-5 bg-base"
+                  textClassName="text-xl text-dark-dark"
+                  onPress={onReset}
+                  text={translate('reset')}
+                />
+              ) : null}
+              {isAdLoaded || parseInt(count, 10) > 0 ? (
+                <Button
+                  classname="rounded-full h-10 w-28"
+                  textClassName="text-xl"
+                  onPress={onView}
+                  text={translate('view')}
+                />
+              ) : null}
+            </View>
           </View>
           <ChatInput classname="" onSendMessage={onSendMessage} />
         </View>
