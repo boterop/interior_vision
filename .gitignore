@@ -6,7 +6,7 @@
 
 # APK Build
 android/app/src/main/assets/
-android/app/src/main/res/drawable-mdpi/
+android/app/src/main/res/
 
 # Xcode
 #

@@ -16,6 +16,8 @@ const API = {
   ask: (question, assistantID) =>
     post('/ask', {assistant_id: assistantID, message: question}),
   view: assistantID => post('/view', {assistant_id: assistantID}),
+  cleanMemory: (assistantID, language) =>
+    post('/clean-memory', {assistant_id: assistantID, language: language}),
 };
 
 export default API;

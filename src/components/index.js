@@ -1,10 +1,9 @@
 import Button from './Button';
-import SelectBox from './SelectBox';
-import {Modal, LangDescription} from './SelectBox';
+import SelectBox, {Modal, LangDescription} from './SelectBox';
 import Triangle from './Triangle';
 import ChatInput from './ChatInput';
-import ChatView from './ChatView';
-import {ChatItem} from './ChatView';
+import ChatView, {ChatItem} from './ChatView';
+import LoadingModal from './LoadingModal';
 
 export {
   Button,
@@ -13,6 +12,7 @@ export {
   SelectBox,
   Modal,
   LangDescription,
+  LoadingModal,
   Triangle,
   ChatInput,
 };
