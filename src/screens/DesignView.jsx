@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {API, StorageService} from '../services';
 import {Image, Pressable, Share, StatusBar, View} from 'react-native';
 import {Button, LoadingModal} from '../components';
+import {Consts} from '../consts';
 
 const {SafeAreaView} = require('react-native');
 
@@ -16,14 +17,14 @@ const DesignView = ({translate, navigation}) => {
       isInitialMount.current = false;
 
       StorageService.load('assistant_id').then(setAssistantID);
+      StorageService.load('image_url').then(setImageUrl);
       StorageService.load('view_count').then(count => {
-        StorageService.load('image_url').then(setImageUrl);
         StorageService.save('view_count', (parseInt(count, 10) - 1).toString());
       });
     }
-  }, [navigation]);
+  }, []);
 
-  const remake = () =>
+  const remake = (attempts = 0) =>
     API.view(assistantID)
       .then(({response}) => {
         StorageService.load('view_count').then(count =>
@@ -37,7 +38,11 @@ const DesignView = ({translate, navigation}) => {
       })
       .catch(e => {
         console.warn(e);
-        remake();
+        if (attempts < Consts.MAX_ATTEMPTS) {
+          remake(attempts + 1);
+        } else {
+          setIsLoading(false);
+        }
       });
 
   const onRemake = () => {

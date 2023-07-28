@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {Image, SafeAreaView, StatusBar, View} from 'react-native';
 import {Button, ChatView, ChatInput, LoadingModal} from '../components';
 import {API, StorageService} from '../services';
-import {Languages} from '../consts';
+import {Consts, Languages} from '../consts';
 import {REWARDED_INTERSTITIAL_ID, INTERSTITIAL_ID} from '@env';
 import mobileAds, {
   AdEventType,
@@ -20,11 +20,10 @@ const Chat = ({navigation, translate}) => {
   const [isAdLoaded, setIsAdLoaded] = useState(false);
   const [isChatAdLoaded, setIsChatAdLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasNewDesign, setHasNewDesign] = useState(false);
   const [count, setCount] = useState('0');
 
   const isInitialMount = useRef(true);
-
-  const chatAdFreq = 5;
 
   const adConfig = {
     requestNonPersonalizedAdsOnly: true,
@@ -86,6 +85,13 @@ const Chat = ({navigation, translate}) => {
     };
   });
 
+  useEffect(() => {
+    if (parseInt(count, 10) > 0 && hasNewDesign) {
+      setHasNewDesign(false);
+      navigation.push('design_view');
+    }
+  }, [count, hasNewDesign, navigation]);
+
   const setAssistant = (id, language) => {
     if (id === undefined) {
       API.createAssistant(Languages.getLanguageByCode(language).name)
@@ -119,25 +125,36 @@ const Chat = ({navigation, translate}) => {
   };
 
   const onSendMessage = message => {
+    if (message.length === 0) {
+      return;
+    }
     if (isChatAdLoaded) {
-      if (chat.length % chatAdFreq === 0) {
+      if (chat.length % Consts.CHAT_AD_FREQ === 0) {
         chatAd.show();
       }
     }
     chat.push({role: 'user', content: message});
     setIsThinking(true);
-    API.ask(message, assistantID).then(({response, status}) => {
-      if (status === 409) {
+    API.ask(message, assistantID)
+      .then(({response, status}) => {
+        if (status === 409) {
+          chat.push({
+            role: 'assistant',
+            content: translate('max_length_reached'),
+          });
+        } else {
+          chat.push({role: 'assistant', content: response});
+        }
+        setChat(chat);
+        setIsThinking(false);
+      })
+      .catch(() => {
+        setIsThinking(false);
         chat.push({
           role: 'assistant',
-          content: translate('max_length_reached'),
+          content: translate('not_available'),
         });
-      } else {
-        chat.push({role: 'assistant', content: response});
-      }
-      setChat(chat);
-      setIsThinking(false);
-    });
+      });
   };
 
   const onReset = () =>
@@ -171,12 +188,12 @@ const Chat = ({navigation, translate}) => {
     });
   };
 
-  const viewDesign = () =>
+  const viewDesign = (attempts = 0) =>
     API.view(assistantID)
       .then(({response, status}) => {
         if (status === 200) {
           StorageService.save('image_url', response);
-          navigation.push('design_view');
+          setHasNewDesign(true);
         } else if (status === 409) {
           chat.push({
             role: 'assistant',
@@ -188,7 +205,15 @@ const Chat = ({navigation, translate}) => {
       })
       .catch(e => {
         console.warn(e);
-        viewDesign();
+        if (attempts < Consts.MAX_ATTEMPTS) {
+          viewDesign(attempts + 1);
+        } else {
+          setIsLoading(false);
+          chat.push({
+            role: 'assistant',
+            content: translate('not_available'),
+          });
+        }
       });
 
   return (

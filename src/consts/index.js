@@ -1,3 +1,4 @@
 import Languages from './Languages';
+import Consts from './Consts';
 
-export {Languages};
+export {Consts, Languages};

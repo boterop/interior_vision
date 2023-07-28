@@ -8,6 +8,7 @@
     "loading": "loading",
     "share-message": "I have generated this preview of my dream room with *Interior Vision AI*.",
     "max_length_reached": "You have been reached the maximum conversation, please reset the chat",
-    "hi": "Hi, what do you want to design today?"
+    "hi": "Hi, what do you want to design today?",
+    "not_available": "I am not available now, try again later"
   }
 }
