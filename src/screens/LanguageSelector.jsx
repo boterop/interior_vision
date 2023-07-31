@@ -19,8 +19,8 @@ const LanguageSelector = ({
     if (isInitialMount.current) {
       isInitialMount.current = false;
 
-      StorageService.load('first_time').then(ft => {
-        if (ft === 'false' && ft !== undefined) {
+      StorageService.load('language').then(ft => {
+        if (ft !== undefined) {
           navigation.navigate('chat');
         }
       });
@@ -38,7 +38,6 @@ const LanguageSelector = ({
   };
 
   const onAcceptSelection = () => {
-    StorageService.save('first_time', 'false');
     StorageService.save('language', currentLanguage);
     navigation.navigate('chat');
   };

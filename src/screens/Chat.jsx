@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Image, SafeAreaView, StatusBar, View} from 'react-native';
+import {Image, Keyboard, SafeAreaView, StatusBar, View} from 'react-native';
 import {Button, ChatView, ChatInput, LoadingModal} from '../components';
 import {API, StorageService} from '../services';
 import {Consts, Languages} from '../consts';
@@ -95,7 +95,7 @@ const Chat = ({navigation, translate}) => {
           StorageService.save('assistant_id', response.toString());
           setCount('0');
           setAssistantID(response.toString());
-          setChat({role: 'assistant', content: translate('hi')});
+          setAssistant(response.toString(), language);
         })
         .catch(error => {
           console.error('createAssistant: ', error);
@@ -163,6 +163,7 @@ const Chat = ({navigation, translate}) => {
     );
 
   const onView = () => {
+    Keyboard.dismiss();
     if (chat.length < 6) {
       chatAd.show();
       return;
@@ -172,6 +173,9 @@ const Chat = ({navigation, translate}) => {
       if (parseInt(view_count, 10) <= 0) {
         if (isAdLoaded) {
           viewAd.show();
+          viewDesign();
+        } else if (isChatAdLoaded) {
+          chatAd.show();
           viewDesign();
         } else {
           console.warn('Not loaded');
@@ -236,14 +240,24 @@ const Chat = ({navigation, translate}) => {
                   text={translate('reset')}
                 />
               ) : null}
-              {isAdLoaded || parseInt(count, 10) > 0 ? (
+              {isAdLoaded || isChatAdLoaded || parseInt(count, 10) > 0 ? (
                 <Button
                   classname="rounded-full h-10 w-28"
                   textClassName="text-xl"
                   onPress={onView}
                   text={translate('view')}
                 />
-              ) : null}
+              ) : (
+                <Button
+                  classname="rounded-full h-10 w-28"
+                  textClassName="text-xl"
+                  onPress={async () => {
+                    await StorageService.save('view_count', '1');
+                    onView();
+                  }}
+                  text={translate('view')}
+                />
+              )}
             </View>
           </View>
           <ChatInput classname="" onSendMessage={onSendMessage} />
