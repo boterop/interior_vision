@@ -1,6 +1,12 @@
 # OSX
 #
+.vscode
 .DS_Store
+.env
+
+# APK Build
+android/app/src/main/assets/
+android/app/src/main/res/
 
 # Xcode
 #

@@ -1,0 +1,14 @@
+{
+  "translation": {
+    "accept": "aceptar",
+    "view": "ver",
+    "reset": "reiniciar",
+    "thinking": "pensando",
+    "remake": "rehacer",
+    "loading": "cargando",
+    "share-message": "he generado esta previsualizacion del cuarto de mis sueños con *Interior Vision AI*.",
+    "max_length_reached": "Has alcanzado la longitud maxima de la conversacion, por favor reinicia el chat",
+    "hi": "Hola, que quieres diseñar el dia de hoy?",
+    "not_available": "No estoy disponible en este momento, por favor intentalo mas tarde"
+  }
+}

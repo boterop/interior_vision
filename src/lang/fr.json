@@ -1,0 +1,14 @@
+{
+  "translation": {
+    "accept": "accepter",
+    "view": "voir",
+    "reset": "réinitialiser",
+    "thinking": "en pensant",
+    "remake": "refaire",
+    "loading": "en cours de chargement",
+    "share-message": "J'ai générée cette visualisation de ma chambre de rêve avec *Interior Vision AI*.",
+    "max_length_reached": " vous avez atteindre le longueur maximale de la conversation, commencer La discussion à nouveau s'il vous plaît",
+    "hi": "Salut, que est que vous voulez concevoir aujourd'hui?",
+    "not_available": "Je ne suis pa disponible maintenant, essayez plus tard s'il vous plaît"
+  }
+}
