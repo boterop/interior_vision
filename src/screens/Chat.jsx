@@ -184,21 +184,21 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
             <View>
               {chat.length > 4 ? (
                 <Button
-                  classname="rounded-full h-8 w-28 mb-5 bg-base"
+                  classname="rounded-full h-10 w-32 mb-5 bg-base"
                   textClassName="text-xl text-dark-dark"
                   onPress={onReset}
                   text={translate('reset')}
                 />
               ) : null}
               <Button
-                classname="rounded-full h-10 w-28"
+                classname="rounded-full h-10 w-32"
                 textClassName="text-xl"
                 onPress={onView}
                 text={translate('view')}
               />
             </View>
           </View>
-          <ChatInput classname="" onSendMessage={onSendMessage} />
+          <ChatInput classname="max-h-40" onSendMessage={onSendMessage} />
         </View>
       </View>
       <LoadingModal isVisible={isLoading} />

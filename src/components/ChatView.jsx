@@ -26,7 +26,7 @@ const ChatView = ({translate, messages, classname, isThinking}) => {
   return (
     <View className={`w-full pb-12 ${classname}`}>
       <Triangle classname="absolute bottom-0 left-20 rotate-45 border-t-[100px] border-x-[40px] border-t-light-base" />
-      <View className="bg-light-base rounded-3xl items-center w-full h-full mb-16 p-3 pt-5">
+      <View className="bg-light-base rounded-3xl items-center w-full h-full p-3 pb-24 pt-5">
         <View className="h-full w-full">
           <FlatList
             ref={scroll => (scrollRef.current = scroll)}
