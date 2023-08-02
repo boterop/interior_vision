@@ -8,7 +8,7 @@ import {BANNER_ID} from '@env';
 
 const {SafeAreaView} = require('react-native');
 
-const DesignView = ({translate, navigation}) => {
+const DesignView = ({translate, showAd, loadAd}) => {
   const [imageUrl, setImageUrl] = useState('');
   const [assistantID, setAssistantID] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -20,11 +20,14 @@ const DesignView = ({translate, navigation}) => {
 
       StorageService.load('assistant_id').then(setAssistantID);
       StorageService.load('image_url').then(setImageUrl);
-      StorageService.load('view_count').then(count => {
-        StorageService.save('view_count', (parseInt(count, 10) - 1).toString());
-      });
+      StorageService.load('view_count').then(count =>
+        StorageService.save('view_count', (parseInt(count, 10) - 1).toString()),
+      );
     }
   }, []);
+
+  useEffect(() => loadAd.chat());
+  useEffect(() => loadAd.view());
 
   const remake = (attempts = 0) =>
     API.view(assistantID)
@@ -48,13 +51,17 @@ const DesignView = ({translate, navigation}) => {
       });
 
   const onRemake = () => {
+    setIsLoading(true);
     StorageService.load('view_count').then(count => {
       if (parseInt(count, 10) <= 0) {
-        navigation.pop(1);
-      } else {
-        setIsLoading(true);
-        remake();
+        showAd();
+        if (!showAd()) {
+          showAd(1);
+        }
       }
+
+      setIsLoading(true);
+      remake();
     });
   };
 
