@@ -1,14 +1,13 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {API, StorageService} from '../services';
-import {Image, Pressable, Share, StatusBar, View} from 'react-native';
+import {Image, Pressable, Share, View} from 'react-native';
 import {Button, LoadingModal} from '../components';
 import {Consts} from '../consts';
 import {BannerAd, BannerAdSize, TestIds} from 'react-native-google-mobile-ads';
 import {BANNER_ID} from '@env';
+import {ImageZoom} from '@likashefqet/react-native-image-zoom';
 
-const {SafeAreaView} = require('react-native');
-
-const DesignView = ({translate, navigation}) => {
+const DesignView = ({translate, showAd, loadAd}) => {
   const [imageUrl, setImageUrl] = useState('');
   const [assistantID, setAssistantID] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -20,11 +19,14 @@ const DesignView = ({translate, navigation}) => {
 
       StorageService.load('assistant_id').then(setAssistantID);
       StorageService.load('image_url').then(setImageUrl);
-      StorageService.load('view_count').then(count => {
-        StorageService.save('view_count', (parseInt(count, 10) - 1).toString());
-      });
+      StorageService.load('view_count').then(count =>
+        StorageService.save('view_count', (parseInt(count, 10) - 1).toString()),
+      );
     }
   }, []);
+
+  useEffect(() => loadAd.chat());
+  useEffect(() => loadAd.view());
 
   const remake = (attempts = 0) =>
     API.view(assistantID)
@@ -48,13 +50,17 @@ const DesignView = ({translate, navigation}) => {
       });
 
   const onRemake = () => {
+    setIsLoading(true);
     StorageService.load('view_count').then(count => {
       if (parseInt(count, 10) <= 0) {
-        navigation.pop(1);
-      } else {
-        setIsLoading(true);
-        remake();
+        showAd();
+        if (!showAd()) {
+          showAd(1);
+        }
       }
+
+      setIsLoading(true);
+      remake();
     });
   };
 
@@ -68,14 +74,13 @@ const DesignView = ({translate, navigation}) => {
   const iconsClassName = 'aspect-square h-[50%]';
 
   return (
-    <SafeAreaView className="items-center h-full w-full bg-base">
-      <StatusBar className="bg-base" />
+    <View className="items-center h-full w-full bg-base">
       <View className="justify-between">
         <View className="flex-1 p-8">
           <Pressable className="aspect-square w-full" onPress={() => {}}>
             <LoadingModal isVisible={isLoading} />
             {imageUrl !== '' && !isLoading ? (
-              <Image className="w-full h-full" source={{uri: imageUrl}} />
+              <ImageZoom className="w-full h-full" uri={imageUrl} />
             ) : null}
           </Pressable>
           <View className="flex-row items-center justify-between mt-5">
@@ -113,7 +118,7 @@ const DesignView = ({translate, navigation}) => {
           requestOptions={Consts.AD_PREFERENCES}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

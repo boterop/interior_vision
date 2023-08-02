@@ -1,83 +1,32 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Image, Keyboard, SafeAreaView, StatusBar, View} from 'react-native';
+import {Image, Keyboard, View} from 'react-native';
 import {Button, ChatView, ChatInput, LoadingModal} from '../components';
 import {API, StorageService} from '../services';
 import {Consts, Languages} from '../consts';
-import {REWARDED_INTERSTITIAL_ID, INTERSTITIAL_ID} from '@env';
-import mobileAds, {
-  AdEventType,
-  InterstitialAd,
-  MaxAdContentRating,
-  RewardedAdEventType,
-  RewardedInterstitialAd,
-  TestIds,
-} from 'react-native-google-mobile-ads';
 
-const Chat = ({navigation, translate}) => {
+const Chat = ({navigation, translate, showAd, loadAd}) => {
   const [assistantID, setAssistantID] = useState(undefined);
   const [chat, setChat] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
-  const [isAdLoaded, setIsAdLoaded] = useState(false);
-  const [isChatAdLoaded, setIsChatAdLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasNewDesign, setHasNewDesign] = useState(false);
   const [count, setCount] = useState('0');
 
   const isInitialMount = useRef(true);
 
-  const viewAd = RewardedInterstitialAd.createForAdRequest(
-    __DEV__ ? TestIds.REWARDED_INTERSTITIAL : REWARDED_INTERSTITIAL_ID,
-    Consts.AD_PREFERENCES,
-  );
-  const chatAd = InterstitialAd.createForAdRequest(
-    __DEV__ ? TestIds.INTERSTITIAL : INTERSTITIAL_ID,
-    Consts.AD_PREFERENCES,
-  );
-
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
 
-      // StorageService.save('view_count', '0');
+      // saveViewCount('0');
+      // StorageService.save('assistant_id', '1')
       StorageService.load('view_count').then(view_count =>
         setCount(view_count),
       );
       StorageService.load('language').then(lang =>
         StorageService.load('assistant_id').then(id => setAssistant(id, lang)),
       );
-
-      mobileAds().setRequestConfiguration({
-        maxAdContentRating: MaxAdContentRating.PG,
-        tagForChildDirectedTreatment: false,
-        tagForUnderAgeOfConsent: false,
-        testDeviceIdentifiers: ['EMULATOR'],
-      });
-      mobileAds().initialize();
     }
-  });
-
-  useEffect(() => {
-    const unsubscribeLoaded = viewAd.addAdEventListener(
-      RewardedAdEventType.LOADED,
-      () => setIsAdLoaded(true),
-    );
-    viewAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, reward => {
-      setCount(reward.amount.toString());
-      StorageService.save('view_count', reward.amount.toString());
-    });
-    const unsubscribeChatLoaded = chatAd.addAdEventListener(
-      AdEventType.LOADED,
-      () => setIsChatAdLoaded(true),
-    );
-
-    chatAd.load();
-
-    viewAd.load();
-
-    return () => {
-      unsubscribeLoaded();
-      unsubscribeChatLoaded();
-    };
   });
 
   useEffect(() => {
@@ -87,13 +36,20 @@ const Chat = ({navigation, translate}) => {
     }
   }, [count, hasNewDesign, navigation]);
 
+  useEffect(() => loadAd.chat());
+  useEffect(() => loadAd.view(setCount));
+
+  const saveViewCount = amount => {
+    setCount(amount);
+    StorageService.save('view_count', amount.toString());
+  };
+
   const setAssistant = (id, language) => {
     if (id === undefined) {
       API.createAssistant(Languages.getLanguageByCode(language).name)
         .then(({response}) => {
-          StorageService.save('view_count', '0');
+          saveViewCount('0');
           StorageService.save('assistant_id', response.toString());
-          setCount('0');
           setAssistantID(response.toString());
           setAssistant(response.toString(), language);
         })
@@ -123,10 +79,8 @@ const Chat = ({navigation, translate}) => {
     if (message.length === 0) {
       return;
     }
-    if (isChatAdLoaded) {
-      if (chat.length % Consts.CHAT_AD_FREQ === 0) {
-        chatAd.show();
-      }
+    if (chat.length % Consts.CHAT_AD_FREQ === 0) {
+      showAd(1);
     }
     chat.push({role: 'user', content: message});
     setIsThinking(true);
@@ -154,35 +108,31 @@ const Chat = ({navigation, translate}) => {
 
   const onReset = () =>
     StorageService.load('language').then(lang =>
-      API.cleanMemory(assistantID, lang).then(() =>
-        API.getMemory(assistantID).then(({response}) => {
-          response.push({role: 'assistant', content: translate('hi')});
-          setChat(response);
-        }),
-      ),
+      API.cleanMemory(assistantID, lang).then(() => setAssistant(assistantID)),
     );
 
   const onView = () => {
     Keyboard.dismiss();
-    if (chat.length < 6) {
-      chatAd.show();
+    if (chat.length < 5) {
+      showAd(1);
       return;
     }
+    setIsLoading(true);
     StorageService.load('view_count').then(view_count => {
-      setIsLoading(true);
-      if (parseInt(view_count, 10) <= 0) {
-        if (isAdLoaded) {
-          viewAd.show();
-          viewDesign();
-        } else if (isChatAdLoaded) {
-          chatAd.show();
-          viewDesign();
-        } else {
-          console.warn('Not loaded');
-          setIsLoading(false);
-        }
-      } else {
+      if (parseInt(view_count, 10) > 0) {
         viewDesign();
+      } else if (showAd()) {
+        viewDesign();
+      } else if (showAd(1)) {
+        saveViewCount('1');
+        viewDesign();
+      } else {
+        console.warn('Not loaded');
+        chat.push({
+          role: 'assistant',
+          content: translate('not_available'),
+        });
+        setIsLoading(false);
       }
     });
   };
@@ -216,9 +166,8 @@ const Chat = ({navigation, translate}) => {
       });
 
   return (
-    <SafeAreaView>
+    <View>
       <View className="items-center h-full w-full bg-base justify-between p-8">
-        <StatusBar hidden />
         <ChatView
           translate={translate}
           messages={chat}
@@ -232,39 +181,27 @@ const Chat = ({navigation, translate}) => {
               source={require('../assets/avatars/avatar1.png')}
             />
             <View>
-              {chat.length > 2 ? (
+              {chat.length > 4 ? (
                 <Button
-                  classname="rounded-full h-8 w-28 mb-5 bg-base"
+                  classname="rounded-full h-10 w-32 mb-5 bg-base"
                   textClassName="text-xl text-dark-dark"
                   onPress={onReset}
                   text={translate('reset')}
                 />
               ) : null}
-              {isAdLoaded || isChatAdLoaded || parseInt(count, 10) > 0 ? (
-                <Button
-                  classname="rounded-full h-10 w-28"
-                  textClassName="text-xl"
-                  onPress={onView}
-                  text={translate('view')}
-                />
-              ) : (
-                <Button
-                  classname="rounded-full h-10 w-28"
-                  textClassName="text-xl"
-                  onPress={async () => {
-                    await StorageService.save('view_count', '1');
-                    onView();
-                  }}
-                  text={translate('view')}
-                />
-              )}
+              <Button
+                classname="rounded-full h-10 w-32"
+                textClassName="text-xl"
+                onPress={onView}
+                text={translate('view')}
+              />
             </View>
           </View>
-          <ChatInput classname="" onSendMessage={onSendMessage} />
+          <ChatInput classname="max-h-40" onSendMessage={onSendMessage} />
         </View>
       </View>
       <LoadingModal isVisible={isLoading} />
-    </SafeAreaView>
+    </View>
   );
 };
 

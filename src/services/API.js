@@ -1,9 +1,9 @@
 import axios from 'axios';
-import {API_URL} from '@env';
+import {API_URL, TEST_API_URL} from '@env';
 
 const post = (uri, body = {}) =>
   axios
-    .post(API_URL + uri, body, {
+    .post((__DEV__ ? TEST_API_URL : API_URL) + uri, body, {
       headers: {
         'Content-Type': 'application/json',
       },
