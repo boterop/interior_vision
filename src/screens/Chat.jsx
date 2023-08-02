@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Image, Keyboard, SafeAreaView, StatusBar, View} from 'react-native';
+import {Image, Keyboard, View} from 'react-native';
 import {Button, ChatView, ChatInput, LoadingModal} from '../components';
 import {API, StorageService} from '../services';
 import {Consts, Languages} from '../consts';
@@ -166,9 +166,8 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
       });
 
   return (
-    <SafeAreaView>
+    <View>
       <View className="items-center h-full w-full bg-base justify-between p-8">
-        <StatusBar hidden />
         <ChatView
           translate={translate}
           messages={chat}
@@ -184,25 +183,25 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
             <View>
               {chat.length > 4 ? (
                 <Button
-                  classname="rounded-full h-8 w-28 mb-5 bg-base"
+                  classname="rounded-full h-10 w-32 mb-5 bg-base"
                   textClassName="text-xl text-dark-dark"
                   onPress={onReset}
                   text={translate('reset')}
                 />
               ) : null}
               <Button
-                classname="rounded-full h-10 w-28"
+                classname="rounded-full h-10 w-32"
                 textClassName="text-xl"
                 onPress={onView}
                 text={translate('view')}
               />
             </View>
           </View>
-          <ChatInput classname="" onSendMessage={onSendMessage} />
+          <ChatInput classname="max-h-40" onSendMessage={onSendMessage} />
         </View>
       </View>
       <LoadingModal isVisible={isLoading} />
-    </SafeAreaView>
+    </View>
   );
 };
 
