@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Image, Keyboard, SafeAreaView, StatusBar, View} from 'react-native';
+import {Image, Keyboard, View} from 'react-native';
 import {Button, ChatView, ChatInput, LoadingModal} from '../components';
 import {API, StorageService} from '../services';
 import {Consts, Languages} from '../consts';
@@ -166,9 +166,8 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
       });
 
   return (
-    <SafeAreaView>
+    <View>
       <View className="items-center h-full w-full bg-base justify-between p-8">
-        <StatusBar hidden />
         <ChatView
           translate={translate}
           messages={chat}
@@ -202,7 +201,7 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
         </View>
       </View>
       <LoadingModal isVisible={isLoading} />
-    </SafeAreaView>
+    </View>
   );
 };
 

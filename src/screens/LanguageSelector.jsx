@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {SafeAreaView, StatusBar, View} from 'react-native';
+import {View} from 'react-native';
 import {Button, SelectBox} from '../components';
 import {StorageService} from '../services';
 import {Languages} from '../consts';
@@ -43,8 +43,7 @@ const LanguageSelector = ({
   };
 
   return (
-    <SafeAreaView className="relative items-center bg-base h-full w-full">
-      <StatusBar hidden />
+    <View className="relative items-center bg-base h-full w-full">
       <View className="bottom-0 absolute flexflex-wrap items-center justify-between h-[65%] w-full mb-10">
         <SelectBox
           values={values}
@@ -53,7 +52,7 @@ const LanguageSelector = ({
         />
         <Button onPress={onAcceptSelection} text={translate('accept')} />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

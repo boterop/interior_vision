@@ -16,6 +16,8 @@ import mobileAds, {
   RewardedInterstitialAd,
   TestIds,
 } from 'react-native-google-mobile-ads';
+import {SafeAreaView, StatusBar} from 'react-native';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 const App = () => {
   const {t, i18n} = useTranslation();
@@ -117,44 +119,49 @@ const App = () => {
       .catch(err => console.error(err));
 
   return (
-    <NavigationContainer>
-      <Navigator
-        initialRouteName="language_selector"
-        screenOptions={{
-          headerShown: false,
-        }}>
-        <Screen name="language_selector">
-          {props => (
-            <LanguageSelector
-              {...props}
-              translate={t}
-              currentLanguage={currentLanguage}
-              onChangeLanguage={onChangeLanguage}
-            />
-          )}
-        </Screen>
-        <Screen name="chat">
-          {props => (
-            <Chat
-              {...props}
-              translate={t}
-              showAd={showAd}
-              loadAd={{chat: loadChatAd, view: loadViewAd}}
-            />
-          )}
-        </Screen>
-        <Screen name="design_view">
-          {props => (
-            <DesignView
-              {...props}
-              translate={t}
-              showAd={showAd}
-              loadAd={{chat: loadChatAd, view: loadViewAd}}
-            />
-          )}
-        </Screen>
-      </Navigator>
-    </NavigationContainer>
+    <GestureHandlerRootView>
+      <SafeAreaView className="relative bg-base h-full w-full">
+        <StatusBar backgroundColor="#768DAD" />
+        <NavigationContainer>
+          <Navigator
+            initialRouteName="language_selector"
+            screenOptions={{
+              headerShown: false,
+            }}>
+            <Screen name="language_selector">
+              {props => (
+                <LanguageSelector
+                  {...props}
+                  translate={t}
+                  currentLanguage={currentLanguage}
+                  onChangeLanguage={onChangeLanguage}
+                />
+              )}
+            </Screen>
+            <Screen name="chat">
+              {props => (
+                <Chat
+                  {...props}
+                  translate={t}
+                  showAd={showAd}
+                  loadAd={{chat: loadChatAd, view: loadViewAd}}
+                />
+              )}
+            </Screen>
+            <Screen name="design_view">
+              {props => (
+                <DesignView
+                  {...props}
+                  translate={t}
+                  showAd={showAd}
+                  loadAd={{chat: loadChatAd, view: loadViewAd}}
+                />
+              )}
+            </Screen>
+          </Navigator>
+        </NavigationContainer>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 };
 
