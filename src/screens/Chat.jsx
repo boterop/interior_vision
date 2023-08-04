@@ -220,7 +220,7 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
               />
             </View>
           </View>
-          <ChatInput classname="max-h-40" onSendMessage={onSendMessage} />
+          <ChatInput classname="max-h-16" onSendMessage={onSendMessage} />
         </View>
       </View>
       <LoadingModal isVisible={isLoading} />
