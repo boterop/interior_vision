@@ -37,8 +37,6 @@ const format = (endpoint, uri) => {
     url = API_URL + CRYPTO_ENDPOINT + uri;
   }
 
-  console.log(url);
-
   return url;
 };
 
