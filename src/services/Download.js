@@ -10,7 +10,7 @@ const Download = imageUrl =>
       );
       const dirs = RNFetchBlob.fs.dirs;
 
-      const path = dirs.DCIMDir + `/${uuid.response}.png`;
+      const path = dirs.PictureDir + `/Interior Vision AI/${uuid.response}.png`;
 
       RNFetchBlob.fs.writeFile(path, image64, 'base64').then(res => {
         console.log('File : ', res);

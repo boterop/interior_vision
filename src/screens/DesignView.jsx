@@ -89,9 +89,10 @@ const DesignView = ({translate, showAd, loadAd}) => {
 
   const onDownload = () => {
     update();
-    // showAd(1);
+    setIsLoading(true);
+    showAd(1);
 
-    Download(imageUrl);
+    Download(imageUrl).finally(() => setIsLoading(false));
   };
 
   const buttonsClassName =
