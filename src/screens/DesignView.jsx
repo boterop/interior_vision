@@ -80,12 +80,9 @@ const DesignView = ({translate, showAd, loadAd}) => {
   };
 
   const onShare = () =>
-    API.base64Image(imageUrl).then(image64 =>
-      Share.share({
-        message: `${translate('share-message')} ${imageUrl}`,
-        url: image64.response,
-      }),
-    );
+    Share.share({
+      message: `${translate('share-message')} ${imageUrl}`,
+    });
 
   const onDownload = () => {
     update();
