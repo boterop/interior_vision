@@ -1,4 +1,5 @@
 import StorageService from './StorageService';
 import API from './API';
+import Download from './Download';
 
-export {API, StorageService};
+export {API, Download, StorageService};

@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {API, StorageService} from '../services';
+import {API, Download, StorageService} from '../services';
 import {Image, Pressable, Share, View} from 'react-native';
 import {Button, LoadingModal} from '../components';
 import {Consts} from '../consts';
@@ -80,9 +80,20 @@ const DesignView = ({translate, showAd, loadAd}) => {
   };
 
   const onShare = () =>
-    Share.share({
-      message: `${translate('share-message')} ${imageUrl}`,
-    });
+    API.base64Image(imageUrl).then(image64 =>
+      Share.share({
+        message: `${translate('share-message')} ${imageUrl}`,
+        url: image64.response,
+      }),
+    );
+
+  const onDownload = () => {
+    update();
+    setIsLoading(true);
+    showAd(1);
+
+    Download(imageUrl).finally(() => setIsLoading(false));
+  };
 
   const buttonsClassName =
     'w-12 h-12 items-center justify-center mr-2 bg-light-base rounded-full border-2 border-black';
@@ -113,12 +124,14 @@ const DesignView = ({translate, showAd, loadAd}) => {
           source={require('../assets/icons/copy.png')}
           />
         </Pressable> */}
-            {/* <Pressable className={buttonsClassName} onPress={() => {}}>
-          <Image
-          className={iconsClassName}
-          source={require('../assets/icons/download.png')}
-          />
-        </Pressable> */}
+            <Pressable
+              className={buttonsClassName}
+              onPress={() => onDownload()}>
+              <Image
+                className={iconsClassName}
+                source={require('../assets/icons/download.png')}
+              />
+            </Pressable>
             <Pressable className={buttonsClassName} onPress={() => onShare()}>
               <Image
                 className={iconsClassName}
