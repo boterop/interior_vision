@@ -18,7 +18,7 @@ android {
         applicationId "com.interior_vision"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
+        versionCode 5
         versionName "0.2.0"
     }
     signingConfigs {
