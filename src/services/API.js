@@ -1,23 +1,73 @@
 import axios from 'axios';
-import {API_URL, TEST_API_URL} from '@env';
+import {
+  API_URL,
+  API_KEY,
+  CRYPTO_ENDPOINT,
+  INTERIOR_VISION_ENDPOINT,
+  TEST_API_URL,
+} from '@env';
 
-const post = (uri, body = {}) =>
+const post = (endpoint, uri, body = {}) =>
   axios
-    .post((__DEV__ ? TEST_API_URL : API_URL) + uri, body, {
+    .post(format(endpoint, uri), body, {
       headers: {
         'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + API_KEY,
       },
     })
     .then(response => response.data);
 
+const get = (endpoint, uri) =>
+  axios
+    .get(format(endpoint, uri), {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + API_KEY,
+      },
+    })
+    .then(response => response.data);
+
+const format = (endpoint, uri) => {
+  let url = '';
+  if (endpoint === INTERIOR_VISION_ENDPOINT) {
+    url = __DEV__
+      ? TEST_API_URL + uri
+      : API_URL + INTERIOR_VISION_ENDPOINT + uri;
+  } else if (endpoint === CRYPTO_ENDPOINT) {
+    url = API_URL + CRYPTO_ENDPOINT + uri;
+  }
+
+  return url;
+};
+
 const API = {
-  createAssistant: language => post('/create-assistant', {language: language}),
-  getMemory: assistantID => post('/get-memory', {assistant_id: assistantID}),
-  ask: (question, assistantID) =>
-    post('/ask', {assistant_id: assistantID, message: question}),
-  view: assistantID => post('/view', {assistant_id: assistantID}),
-  cleanMemory: (assistantID, language) =>
-    post('/clean-memory', {assistant_id: assistantID, language: language}),
+  createAssistant: language =>
+    post(INTERIOR_VISION_ENDPOINT, '/create-assistant', {language: language}),
+  getMemory: (assistantID, assistantKey) =>
+    post(INTERIOR_VISION_ENDPOINT, '/get-memory', {
+      assistant_id: assistantID,
+      assistant_key: assistantKey,
+    }),
+  ask: (question, assistantID, assistantKey) =>
+    post(INTERIOR_VISION_ENDPOINT, '/ask', {
+      assistant_id: assistantID,
+      assistant_key: assistantKey,
+      message: question,
+    }),
+  view: (assistantID, assistantKey) =>
+    post(INTERIOR_VISION_ENDPOINT, '/view', {
+      assistant_id: assistantID,
+      assistant_key: assistantKey,
+    }),
+  cleanMemory: (assistantID, assistantKey, language) =>
+    post(INTERIOR_VISION_ENDPOINT, '/clean-memory', {
+      assistant_id: assistantID,
+      assistant_key: assistantKey,
+      language: language,
+    }),
+  base64Image: imageUrl =>
+    post(CRYPTO_ENDPOINT, '/base64-image', {'image-url': imageUrl}),
+  genUUID: () => get(CRYPTO_ENDPOINT, '/gen-uuid'),
 };
 
 export default API;

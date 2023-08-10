@@ -6,11 +6,13 @@ import {Consts, Languages} from '../consts';
 
 const Chat = ({navigation, translate, showAd, loadAd}) => {
   const [assistantID, setAssistantID] = useState(undefined);
+  const [assistantKey, setAssistantKey] = useState(undefined);
   const [chat, setChat] = useState([]);
   const [isThinking, setIsThinking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasNewDesign, setHasNewDesign] = useState(false);
   const [count, setCount] = useState('0');
+  const [updateState, setUpdate] = useState(false);
 
   const isInitialMount = useRef(true);
 
@@ -20,11 +22,16 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
 
       // saveViewCount('0');
       // StorageService.save('assistant_id', '1')
+      // StorageService.save('assistant_key', "");
       StorageService.load('view_count').then(view_count =>
         setCount(view_count),
       );
       StorageService.load('language').then(lang =>
-        StorageService.load('assistant_id').then(id => setAssistant(id, lang)),
+        StorageService.load('assistant_id').then(id =>
+          StorageService.load('assistant_key').then(key =>
+            setAssistant(id, key, lang),
+          ),
+        ),
       );
     }
   });
@@ -39,26 +46,33 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
   useEffect(() => loadAd.chat());
   useEffect(() => loadAd.view(setCount));
 
+  const update = () => setUpdate(!updateState);
+
   const saveViewCount = amount => {
     setCount(amount);
     StorageService.save('view_count', amount.toString());
   };
 
-  const setAssistant = (id, language) => {
+  const setAssistant = (id, key, language) => {
     if (id === undefined) {
       API.createAssistant(Languages.getLanguageByCode(language).name)
         .then(({response}) => {
+          id = response.assistant_id.toString();
+          key = response.assistant_key.toString();
           saveViewCount('0');
-          StorageService.save('assistant_id', response.toString());
-          setAssistantID(response.toString());
-          setAssistant(response.toString(), language);
+          StorageService.save('assistant_id', id);
+          StorageService.save('assistant_key', key);
+          setAssistantID(id);
+          setAssistantKey(key);
+          setAssistant(id, key, language);
         })
         .catch(error => {
           console.error('createAssistant: ', error);
         });
     } else {
       setAssistantID(id);
-      API.getMemory(id)
+      setAssistantKey(key);
+      API.getMemory(id, key)
         .then(({status, response}) => {
           if (status === 200) {
             if (response.length <= 3) {
@@ -66,7 +80,7 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
             }
             setChat(response);
           } else if (status === 409) {
-            setAssistant(undefined, language);
+            setAssistant(undefined, key, language);
           }
         })
         .catch(error => {
@@ -76,6 +90,7 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
   };
 
   const onSendMessage = message => {
+    update();
     if (message.length === 0) {
       return;
     }
@@ -84,7 +99,7 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
     }
     chat.push({role: 'user', content: message});
     setIsThinking(true);
-    API.ask(message, assistantID)
+    API.ask(message, assistantID, assistantKey)
       .then(({response, status}) => {
         if (status === 409) {
           chat.push({
@@ -108,12 +123,19 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
 
   const onReset = () =>
     StorageService.load('language').then(lang =>
-      API.cleanMemory(assistantID, lang).then(() => setAssistant(assistantID)),
+      API.cleanMemory(assistantID, assistantKey, lang).then(() =>
+        setAssistant(assistantID, assistantKey, lang),
+      ),
     );
 
   const onView = () => {
     Keyboard.dismiss();
+    update();
     if (chat.length < 5) {
+      chat.push({
+        role: 'assistant',
+        content: translate('not_available'),
+      });
       showAd(1);
       return;
     }
@@ -138,7 +160,7 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
   };
 
   const viewDesign = (attempts = 0) =>
-    API.view(assistantID)
+    API.view(assistantID, assistantKey)
       .then(({response, status}) => {
         if (status === 200) {
           StorageService.save('image_url', response);
@@ -155,6 +177,7 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
       .catch(e => {
         console.warn(e);
         if (attempts < Consts.MAX_ATTEMPTS) {
+          update();
           viewDesign(attempts + 1);
         } else {
           setIsLoading(false);
@@ -197,7 +220,7 @@ const Chat = ({navigation, translate, showAd, loadAd}) => {
               />
             </View>
           </View>
-          <ChatInput classname="max-h-40" onSendMessage={onSendMessage} />
+          <ChatInput classname="max-h-16" onSendMessage={onSendMessage} />
         </View>
       </View>
       <LoadingModal isVisible={isLoading} />

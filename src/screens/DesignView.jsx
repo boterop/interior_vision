@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {API, StorageService} from '../services';
+import {API, Download, StorageService} from '../services';
 import {Image, Pressable, Share, View} from 'react-native';
 import {Button, LoadingModal} from '../components';
 import {Consts} from '../consts';
@@ -10,7 +10,9 @@ import {ImageZoom} from '@likashefqet/react-native-image-zoom';
 const DesignView = ({translate, showAd, loadAd}) => {
   const [imageUrl, setImageUrl] = useState('');
   const [assistantID, setAssistantID] = useState('');
+  const [assistantKey, setAssistantKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [updateState, setUpdate] = useState(false);
   const isInitialMount = useRef(true);
 
   useEffect(() => {
@@ -18,6 +20,7 @@ const DesignView = ({translate, showAd, loadAd}) => {
       isInitialMount.current = false;
 
       StorageService.load('assistant_id').then(setAssistantID);
+      StorageService.load('assistant_key').then(setAssistantKey);
       StorageService.load('image_url').then(setImageUrl);
       StorageService.load('view_count').then(count =>
         StorageService.save('view_count', (parseInt(count, 10) - 1).toString()),
@@ -28,21 +31,35 @@ const DesignView = ({translate, showAd, loadAd}) => {
   useEffect(() => loadAd.chat());
   useEffect(() => loadAd.view());
 
+  const update = () => setUpdate(!updateState);
+
   const remake = (attempts = 0) =>
-    API.view(assistantID)
+    API.view(assistantID, assistantKey)
       .then(({response}) => {
-        StorageService.load('view_count').then(count =>
-          StorageService.save(
-            'view_count',
-            (parseInt(count, 10) - 1).toString(),
-          ),
-        );
-        setIsLoading(false);
-        setImageUrl(response);
+        if (response === 'Internal server error') {
+          if (attempts < Consts.MAX_ATTEMPTS) {
+            update();
+            showAd();
+            showAd(1);
+            remake(attempts + 1);
+          } else {
+            setIsLoading(false);
+          }
+        } else {
+          StorageService.load('view_count').then(count =>
+            StorageService.save(
+              'view_count',
+              (parseInt(count, 10) - 1).toString(),
+            ),
+          );
+          setImageUrl(response);
+          setIsLoading(false);
+        }
       })
       .catch(e => {
         console.warn(e);
         if (attempts < Consts.MAX_ATTEMPTS) {
+          update();
           remake(attempts + 1);
         } else {
           setIsLoading(false);
@@ -53,13 +70,11 @@ const DesignView = ({translate, showAd, loadAd}) => {
     setIsLoading(true);
     StorageService.load('view_count').then(count => {
       if (parseInt(count, 10) <= 0) {
-        showAd();
         if (!showAd()) {
           showAd(1);
         }
       }
 
-      setIsLoading(true);
       remake();
     });
   };
@@ -68,6 +83,14 @@ const DesignView = ({translate, showAd, loadAd}) => {
     Share.share({
       message: `${translate('share-message')} ${imageUrl}`,
     });
+
+  const onDownload = () => {
+    update();
+    setIsLoading(true);
+    showAd(1);
+
+    Download(imageUrl).finally(() => setIsLoading(false));
+  };
 
   const buttonsClassName =
     'w-12 h-12 items-center justify-center mr-2 bg-light-base rounded-full border-2 border-black';
@@ -98,12 +121,14 @@ const DesignView = ({translate, showAd, loadAd}) => {
           source={require('../assets/icons/copy.png')}
           />
         </Pressable> */}
-            {/* <Pressable className={buttonsClassName} onPress={() => {}}>
-          <Image
-          className={iconsClassName}
-          source={require('../assets/icons/download.png')}
-          />
-        </Pressable> */}
+            <Pressable
+              className={buttonsClassName}
+              onPress={() => onDownload()}>
+              <Image
+                className={iconsClassName}
+                source={require('../assets/icons/download.png')}
+              />
+            </Pressable>
             <Pressable className={buttonsClassName} onPress={() => onShare()}>
               <Image
                 className={iconsClassName}
