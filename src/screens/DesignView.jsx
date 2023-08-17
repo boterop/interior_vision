@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {API, Download, StorageService} from '../services';
-import {Image, Pressable, Share, View} from 'react-native';
+import {Alert, Image, Pressable, Share, View} from 'react-native';
 import {Button, LoadingModal} from '../components';
 import {Consts} from '../consts';
 import {BannerAd, BannerAdSize, TestIds} from 'react-native-google-mobile-ads';
@@ -87,9 +87,17 @@ const DesignView = ({translate, showAd, loadAd}) => {
   const onDownload = () => {
     update();
     setIsLoading(true);
-    showAd(1);
 
-    Download(imageUrl).finally(() => setIsLoading(false));
+    Download(imageUrl)
+      .then(() => {
+        Alert.alert(translate('image-saved-successful'));
+        showAd(1);
+      })
+      .catch(e => {
+        Alert.alert(translate('image-saved-error'));
+        console.error(e);
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const buttonsClassName =
