@@ -9,6 +9,8 @@
     "share-message": "J'ai générée cette visualisation de ma chambre de rêve avec *Interior Vision AI*.",
     "max_length_reached": " vous avez atteindre le longueur maximale de la conversation, commencer La discussion à nouveau s'il vous plaît",
     "hi": "Salut, que est que vous voulez concevoir aujourd'hui?",
-    "not_available": "Je ne suis pa disponible maintenant, essayez plus tard s'il vous plaît"
+    "not_available": "Je ne suis pa disponible maintenant, essayez plus tard s'il vous plaît",
+    "image-saved-successful": "L'image a été enregistrée.",
+    "image-saved-error": "Erreur pendant enregistrement de l'image, réessayez s'il vous plaît."
   }
 }
